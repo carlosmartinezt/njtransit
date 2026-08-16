@@ -1,0 +1,39 @@
+# NJ Transit departure board — API proxy.
+#
+# Installed as a *user* unit, which needs no sudo and still survives reboot
+# because lingering is enabled for carlos (`loginctl enable-linger carlos`):
+#
+#   mkdir -p ~/.config/systemd/user
+#   cp deploy/njtransit-api.service ~/.config/systemd/user/
+#   systemctl --user daemon-reload
+#   systemctl --user enable --now njtransit-api
+#
+# Logs:  journalctl --user -u njtransit-api -f
+#
+# Credentials come from /home/carlos/njtransit/.env — keep it chmod 600.
+
+[Unit]
+Description=NJ Transit departure board API (behind Caddy)
+After=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/carlos/njtransit
+ExecStart=/usr/bin/env node server/index.mjs
+Restart=always
+RestartSec=3
+
+# Only ever binds loopback; Caddy is the only thing that reaches it.
+Environment=NODE_ENV=production
+Environment=HOST=127.0.0.1
+Environment=PORT=3057
+
+NoNewPrivileges=true
+PrivateTmp=true
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=njtransit-api
+
+[Install]
+WantedBy=default.target

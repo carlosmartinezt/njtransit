@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Next Bus">
+  <rect width="64" height="64" rx="14" fill="#10151c"/>
+  <!-- The gate plate, the same mark the board is built around. -->
+  <rect x="12" y="14" width="40" height="36" rx="5" fill="#ffb020"/>
+  <!-- Bus front: windscreen band over two lamps, read at 16px as a solid glyph. -->
+  <rect x="18" y="20" width="28" height="12" rx="2.5" fill="#241701"/>
+  <rect x="18" y="37" width="8" height="6" rx="2" fill="#241701"/>
+  <rect x="38" y="37" width="8" height="6" rx="2" fill="#241701"/>
+</svg>

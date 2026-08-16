@@ -1,0 +1,30 @@
+{
+  "name": "njtransit",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Which bus, which gate, how long — a departure board for Port Authority.",
+  "scripts": {
+    "dev": "concurrently -n web,api -c cyan,magenta \"vite\" \"node --watch server/index.mjs\"",
+    "dev:web": "vite",
+    "dev:api": "node --watch server/index.mjs",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "start": "node server/index.mjs",
+    "typecheck": "tsc -b --noEmit",
+    "stops": "node scripts/refresh-stops.mjs"
+  },
+  "dependencies": {
+    "preact": "^10.24.3"
+  },
+  "devDependencies": {
+    "@fontsource-variable/ibm-plex-sans": "^5.1.1",
+    "@fontsource/ibm-plex-sans-condensed": "^5.1.0",
+    "@preact/preset-vite": "^2.9.1",
+    "concurrently": "^9.1.0",
+    "playwright-core": "^1.62.1",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.11",
+    "vite-plugin-pwa": "^0.21.0"
+  }
+}

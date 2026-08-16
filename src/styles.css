@@ -1,0 +1,814 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   Next Bus — Port Authority
+
+   The design brief is a rider standing in a loud terminal, one hand on a bag,
+   deciding whether to run. So this is built like terminal signage rather than a
+   web app: a dark board, condensed type, and one amber plate carrying the gate
+   number — the single fact that's hardest to find in the real terminal.
+
+   Fonts are self-hosted (latin subsets only) so the board renders identically
+   with no network.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+@font-face {
+  font-family: 'Plex Sans';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 700;
+  src: url('@fontsource-variable/ibm-plex-sans/files/ibm-plex-sans-latin-wght-normal.woff2')
+    format('woff2-variations');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215,
+    U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Plex Cond';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 600;
+  src: url('@fontsource/ibm-plex-sans-condensed/files/ibm-plex-sans-condensed-latin-600-normal.woff2')
+    format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+2122;
+}
+
+@font-face {
+  font-family: 'Plex Cond';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 700;
+  src: url('@fontsource/ibm-plex-sans-condensed/files/ibm-plex-sans-condensed-latin-700-normal.woff2')
+    format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+2122;
+}
+
+:root {
+  /* Ground: a blue-black that reads like painted terminal steel, not pure #000
+     — pure black crushes the row separation on OLED phones. */
+  --ink: #10151c;
+  --ink-raised: #171f29;
+  --panel: #1b2531;
+  --panel-hi: #24303e;
+  --edge: #2c3948;
+
+  --chalk: #e9eef5;
+  --dim: #8695a8;
+  --dimmer: #5d6b7d;
+
+  /* The one loud colour. Departure-board amber, reserved for gate plates and
+     buses about to leave. Nothing else may use it. */
+  --amber: #ffb020;
+  --amber-ink: #241701;
+
+  /* Live-tracking only. */
+  --go: #35d399;
+  --warn: #ff7a5c;
+
+  --r-sm: 4px;
+  --r-md: 8px;
+  --r-lg: 14px;
+
+  --gut: 16px;
+  --shell: 640px;
+
+  --sans: 'Plex Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --cond: 'Plex Cond', 'Plex Sans', ui-sans-serif, system-ui, sans-serif;
+
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--ink);
+  color: var(--chalk);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  /* Board data is glanced at, never selected. */
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: contain;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
+}
+
+/* ── shell ─────────────────────────────────────────────────────────────────── */
+
+.shell {
+  max-width: var(--shell);
+  margin: 0 auto;
+  padding: 0 var(--gut) calc(32px + env(safe-area-inset-bottom));
+}
+
+/* ── header ────────────────────────────────────────────────────────────────── */
+
+.hdr {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: color-mix(in srgb, var(--ink) 92%, transparent);
+  backdrop-filter: saturate(1.4) blur(12px);
+  border-bottom: 1px solid var(--edge);
+  padding-top: env(safe-area-inset-top);
+}
+
+.hdr__inner {
+  max-width: var(--shell);
+  margin: 0 auto;
+  padding: 10px var(--gut);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hdr__stop {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  text-align: left;
+  padding: 2px 0;
+}
+
+.hdr__name {
+  font-family: var(--cond);
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hdr__swap {
+  font-size: 11px;
+  color: var(--dimmer);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Freshness pip. Colour is backed up by the text beside it, never alone. */
+.pip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--dim);
+  white-space: nowrap;
+}
+
+.pip__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--dimmer);
+  flex: none;
+}
+
+.pip--live .pip__dot {
+  background: var(--go);
+  animation: pulse 2.4s ease-in-out infinite;
+}
+
+.pip--stale .pip__dot {
+  background: var(--amber);
+}
+
+.pip--offline .pip__dot {
+  background: var(--warn);
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* ── banners ───────────────────────────────────────────────────────────────── */
+
+.banner {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  font-size: 13px;
+  line-height: 1.4;
+  background: var(--ink-raised);
+  border: 1px solid var(--edge);
+  color: var(--dim);
+}
+
+.banner--warn {
+  border-color: color-mix(in srgb, var(--amber) 40%, var(--edge));
+  color: color-mix(in srgb, var(--amber) 70%, var(--chalk));
+}
+
+.banner strong {
+  color: var(--chalk);
+  font-weight: 600;
+}
+
+.banner__icon {
+  flex: none;
+  line-height: 1.4;
+}
+
+/* ── next up: the hero ─────────────────────────────────────────────────────── */
+
+.next {
+  margin-top: 16px;
+  border-radius: var(--r-lg);
+  background: linear-gradient(180deg, var(--panel-hi), var(--panel));
+  border: 1px solid var(--edge);
+  overflow: hidden;
+}
+
+.next__label {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dim);
+  padding: 12px 16px 0;
+}
+
+.next__body {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 16px;
+  align-items: center;
+  padding: 8px 16px 16px;
+}
+
+/* The signature element: a hard-edged plate, the way a gate sign is a plate.
+   Everything else on the board is soft and quiet so this reads first. */
+.plate {
+  background: var(--amber);
+  color: var(--amber-ink);
+  border-radius: var(--r-sm);
+  padding: 8px 14px 10px;
+  text-align: center;
+  min-width: 104px;
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--amber) 50%, transparent),
+    0 8px 24px -12px var(--amber);
+}
+
+.plate__label {
+  display: block;
+  font-family: var(--cond);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.72;
+}
+
+.plate__value {
+  display: block;
+  font-family: var(--cond);
+  font-weight: 700;
+  font-size: 46px;
+  line-height: 0.94;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+.plate--none .plate__value {
+  font-size: 22px;
+  line-height: 1.5;
+}
+
+.next__meta {
+  min-width: 0;
+}
+
+.next__when {
+  font-family: var(--cond);
+  font-weight: 700;
+  font-size: 38px;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+.next__when--now {
+  color: var(--amber);
+}
+
+.next__route {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 6px;
+  min-width: 0;
+}
+
+.next__num {
+  font-family: var(--cond);
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: 0.01em;
+}
+
+.next__dest {
+  font-size: 14px;
+  color: var(--dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.next__sub {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--dimmer);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── controls ──────────────────────────────────────────────────────────────── */
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 20px 0 10px;
+}
+
+.seg {
+  display: inline-flex;
+  background: var(--ink-raised);
+  border: 1px solid var(--edge);
+  border-radius: 999px;
+  padding: 3px;
+  flex: none;
+}
+
+.seg__btn {
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--dim);
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.seg__btn[aria-pressed='true'] {
+  background: var(--panel-hi);
+  color: var(--chalk);
+}
+
+.controls__spacer {
+  flex: 1;
+}
+
+.linkish {
+  font-size: 13px;
+  color: var(--dim);
+  padding: 6px 4px;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+
+.linkish:hover {
+  color: var(--chalk);
+  border-bottom-color: var(--edge);
+}
+
+/* Route chips scroll horizontally: at Port Authority a board can carry 30+
+   routes, and wrapping them would push the departures off screen. */
+.chips {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 2px 0 10px;
+  margin: 0 calc(-1 * var(--gut));
+  padding-inline: var(--gut);
+  scroll-snap-type: x proximity;
+}
+
+.chips::-webkit-scrollbar {
+  display: none;
+}
+
+.chip {
+  flex: none;
+  scroll-snap-align: start;
+  font-family: var(--cond);
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--ink-raised);
+  border: 1px solid var(--edge);
+  color: var(--dim);
+  font-variant-numeric: tabular-nums;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.chip[aria-pressed='true'] {
+  background: color-mix(in srgb, var(--amber) 16%, var(--ink-raised));
+  border-color: color-mix(in srgb, var(--amber) 45%, var(--edge));
+  color: var(--amber);
+}
+
+/* ── board ─────────────────────────────────────────────────────────────────── */
+
+.board {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--edge);
+}
+
+.rowgroup {
+  font-family: var(--cond);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--dimmer);
+  padding: 16px 2px 6px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 58px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px 2px;
+  border-bottom: 1px solid var(--edge);
+}
+
+.row__route {
+  font-family: var(--cond);
+  font-weight: 700;
+  font-size: 25px;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+  color: var(--chalk);
+}
+
+.row__mid {
+  min-width: 0;
+}
+
+.row__dest {
+  font-size: 14px;
+  color: var(--chalk);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.row__tags {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--dimmer);
+}
+
+/* Gate on a row: same plate language as the hero, scaled down and outlined
+   rather than filled, so a board of 30 rows doesn't turn into a wall of amber. */
+.gate {
+  font-family: var(--cond);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  padding: 2px 7px;
+  border-radius: var(--r-sm);
+  border: 1px solid color-mix(in srgb, var(--amber) 45%, transparent);
+  color: var(--amber);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.gate--solid {
+  background: var(--amber);
+  border-color: var(--amber);
+  color: var(--amber-ink);
+}
+
+.gate--none {
+  border-color: var(--edge);
+  color: var(--dimmer);
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.tag--live {
+  color: var(--go);
+}
+
+.tag--late {
+  color: var(--warn);
+}
+
+.tag__dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
+
+.row__when {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.row__count {
+  font-family: var(--cond);
+  font-weight: 700;
+  font-size: 19px;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  color: var(--chalk);
+}
+
+.row--boarding .row__count {
+  color: var(--amber);
+}
+
+.row--later .row__count {
+  color: var(--dim);
+}
+
+.row__clock {
+  font-size: 12px;
+  color: var(--dimmer);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── empty / error states ──────────────────────────────────────────────────── */
+
+.empty {
+  text-align: center;
+  padding: 48px 16px;
+  color: var(--dim);
+}
+
+.empty__title {
+  font-family: var(--cond);
+  font-weight: 700;
+  font-size: 19px;
+  letter-spacing: 0.02em;
+  color: var(--chalk);
+  text-transform: uppercase;
+}
+
+.empty__body {
+  margin-top: 8px;
+  font-size: 14px;
+  max-width: 34ch;
+  margin-inline: auto;
+}
+
+.btn {
+  display: inline-block;
+  margin-top: 16px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: var(--panel-hi);
+  border: 1px solid var(--edge);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--chalk);
+  text-decoration: none;
+}
+
+.btn:hover {
+  background: var(--edge);
+}
+
+.btn--amber {
+  background: var(--amber);
+  border-color: var(--amber);
+  color: var(--amber-ink);
+  font-weight: 600;
+}
+
+.btn--amber:hover {
+  background: color-mix(in srgb, var(--amber) 88%, #fff);
+}
+
+/* ── skeleton ──────────────────────────────────────────────────────────────── */
+
+.skel {
+  border-radius: var(--r-sm);
+  background: linear-gradient(
+    90deg,
+    var(--ink-raised) 25%,
+    var(--panel) 50%,
+    var(--ink-raised) 75%
+  );
+  background-size: 300% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 150% 0;
+  }
+  to {
+    background-position: -150% 0;
+  }
+}
+
+/* ── stop picker ───────────────────────────────────────────────────────────── */
+
+.sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(4, 7, 11, 0.66);
+  backdrop-filter: blur(3px);
+  animation: fade 0.16s ease;
+}
+
+.sheet__panel {
+  width: 100%;
+  max-width: var(--shell);
+  background: var(--ink-raised);
+  border: 1px solid var(--edge);
+  border-radius: var(--r-lg) var(--r-lg) 0 0;
+  padding: 18px var(--gut) calc(20px + env(safe-area-inset-bottom));
+  animation: rise 0.2s cubic-bezier(0.2, 0.7, 0.3, 1);
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.sheet__title {
+  font-family: var(--cond);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin: 0 0 12px;
+}
+
+.stopbtn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 13px 12px;
+  border-radius: var(--r-md);
+  border: 1px solid transparent;
+  margin-bottom: 6px;
+}
+
+.stopbtn:hover {
+  background: var(--panel);
+}
+
+.stopbtn[aria-current='true'] {
+  border-color: color-mix(in srgb, var(--amber) 45%, transparent);
+  background: color-mix(in srgb, var(--amber) 10%, transparent);
+}
+
+.stopbtn__name {
+  font-family: var(--cond);
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.stopbtn__city {
+  font-size: 13px;
+  color: var(--dim);
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes rise {
+  from {
+    transform: translateY(14px);
+    opacity: 0;
+  }
+}
+
+/* ── footer ────────────────────────────────────────────────────────────────── */
+
+.foot {
+  margin-top: 28px;
+  padding-top: 18px;
+  border-top: 1px solid var(--edge);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.foot__note {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--dimmer);
+  max-width: 44ch;
+}
+
+.foot__note a {
+  color: var(--dim);
+}
+
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── responsive ────────────────────────────────────────────────────────────── */
+
+@media (min-width: 480px) {
+  :root {
+    --gut: 22px;
+  }
+
+  .plate__value {
+    font-size: 56px;
+  }
+
+  .next__when {
+    font-size: 44px;
+  }
+
+  .row {
+    grid-template-columns: 68px 1fr auto;
+    padding: 14px 2px;
+  }
+
+  .row__route {
+    font-size: 28px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
