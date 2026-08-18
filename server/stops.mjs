@@ -18,12 +18,15 @@ const STOPS_FILE = join(HERE, '..', 'data', 'stops.json')
 
 const SEED = [
   {
-    id: '26126',
+    // Confirmed live against getBusDV on 2026-08-18. This is the GTFS
+    // stop_code for Port Authority Bus Terminal — BUSDV2 keys on stop_code,
+    // not stop_id. The earlier 26126 was a guess and returns an empty board.
+    id: '26229',
     name: 'Port Authority Bus Terminal',
     short: 'Port Authority',
     city: 'New York, NY',
     terminal: true,
-    verified: false,
+    verified: true,
   },
   {
     id: '20372',
@@ -94,4 +97,8 @@ export function searchStops(q, limit = 25) {
     .slice(0, limit)
 }
 
-export const DEFAULT_STOP_ID = process.env.PABT_STOP_ID?.trim() || SEED[0].id
+// Read lazily: ESM evaluates this module before index.mjs's body loads .env,
+// so a top-level read would always miss PABT_STOP_ID.
+export function defaultStopId() {
+  return process.env.PABT_STOP_ID?.trim() || SEED[0].id
+}

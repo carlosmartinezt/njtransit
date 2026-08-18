@@ -15,7 +15,7 @@ import { dirname, join } from 'node:path'
 
 import { NJTransitClient, NJTransitError, normalizeDepartures, PROD_URL, TEST_URL } from './njt.mjs'
 import { sampleBusDV } from './sample.mjs'
-import { allStops, findStop, searchStops, DEFAULT_STOP_ID } from './stops.mjs'
+import { allStops, findStop, searchStops, defaultStopId } from './stops.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 
@@ -214,7 +214,7 @@ const server = createServer(async (req, res) => {
         upstreamCallsToday: budget.calls,
         dailyCallCap: DAILY_CALL_CAP,
         cachedBoards: cache.size,
-        defaultStopId: DEFAULT_STOP_ID,
+        defaultStopId: defaultStopId(),
         uptimeSec: Math.round(process.uptime()),
       })
     }
@@ -222,7 +222,7 @@ const server = createServer(async (req, res) => {
     if (path === '/api/stops') {
       const q = url.searchParams.get('q') ?? ''
       return send(res, 200, {
-        defaultStopId: DEFAULT_STOP_ID,
+        defaultStopId: defaultStopId(),
         stops: searchStops(q),
       }, { 'Cache-Control': 'public, max-age=3600' })
     }
@@ -257,7 +257,7 @@ const server = createServer(async (req, res) => {
     }
 
     if (path === '/api/departures') {
-      const stopId = (url.searchParams.get('stop') || DEFAULT_STOP_ID).trim()
+      const stopId = (url.searchParams.get('stop') || defaultStopId()).trim()
       const route = url.searchParams.get('route')?.trim() || undefined
       const direction = url.searchParams.get('direction')?.trim() || undefined
 
@@ -282,7 +282,7 @@ const server = createServer(async (req, res) => {
 })
 
 server.listen(PORT, HOST, () => {
-  console.log(`▶ njtransit api on http://${HOST}:${PORT}  (default stop ${DEFAULT_STOP_ID})`)
+  console.log(`▶ njtransit api on http://${HOST}:${PORT}  (default stop ${defaultStopId()})`)
 })
 
 for (const sig of ['SIGINT', 'SIGTERM']) {
