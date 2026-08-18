@@ -1,6 +1,9 @@
 export interface Departure {
   id: string
+  /** The route family NJT bills the trip as, e.g. "166" — what the chips filter on. */
   route: string
+  /** The exact service, e.g. "166X". Equals `route` unless NJT runs variants. */
+  service: string
   destination: string
   /** Terminal gate, or null for stops that don't have one. */
   gate: string | null

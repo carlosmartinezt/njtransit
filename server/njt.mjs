@@ -191,6 +191,30 @@ function normalizeGate(raw) {
 }
 
 /**
+ * NJT headers lead with the service designation: "166T TURNPIKE EXPRESS
+ * BERGENFIELD" on route 166. Split it off so the row can show 166T while the
+ * filter still groups it under 166, and so the destination stops repeating a
+ * number the row already displays in 28px type.
+ *
+ * Only a leading token that is the route plus a letter or two counts. A header
+ * like "119 UNION CITY" just loses the redundant number; anything unexpected is
+ * left whole rather than guessed at.
+ */
+function splitHeader(header, family) {
+  const [first, ...rest] = header.split(' ')
+  if (!first) return { service: family, destination: header }
+
+  const isVariant = new RegExp(`^${escapeRe(family)}[A-Z]{1,2}$`).test(first)
+  if (isVariant) return { service: first, destination: rest.join(' ') || header }
+  if (first === family) return { service: family, destination: rest.join(' ') || header }
+  return { service: family, destination: header }
+}
+
+function escapeRe(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+/**
  * Map NJT's passenger-load codes onto something a rider understands.
  * Unknown codes pass through as null rather than guessing.
  */
@@ -244,12 +268,22 @@ export function normalizeDepartures(payload, { at = Date.now() } = {}) {
           ? Math.round((predicted - scheduled) / 60_000)
           : null
 
+      // NJT bills 166, 166T and 166X all as route "166", and only the header
+      // says which one this is. Three of them can leave within a minute from
+      // three different gates, so a board showing "166" three times reads like
+      // a bug. Keep the family for filtering, surface the service on the row.
+      const family = cleanText(t.public_route ?? t.publicRoute) || '—'
+      const header = cleanText(t.header ?? t.Header) || ''
+      const { service, destination } = splitHeader(header, family)
+
       return {
         id:
           str(t.internal_trip_number ?? t.internalTripNum) ||
           `${str(t.public_route)}-${scheduledRaw || predictedRaw}-${i}`,
-        route: cleanText(t.public_route ?? t.publicRoute) || '—',
-        destination: cleanText(t.header ?? t.Header) || '',
+        route: family,
+        /** The exact service, e.g. "166X" where `route` is the "166" family. */
+        service,
+        destination,
         gate: normalizeGate(t.lanegate ?? t.laneGate),
         departsAt,
         scheduledAt: scheduled,

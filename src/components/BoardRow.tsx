@@ -16,8 +16,11 @@ export function BoardRow({ departure: d, now, showRoute = true }: Props) {
 
   return (
     <li class={`row row--${urgency}`}>
+      {/* The service, not the family: 166, 166T and 166X can leave within a
+          minute of each other from three gates, and showing "166" on all three
+          reads as a duplicated row rather than three different buses. */}
       <div class="row__route">
-        {showRoute ? d.route : <span class="sr">Route {d.route}</span>}
+        {showRoute ? d.service : <span class="sr">Route {d.service}</span>}
       </div>
 
       <div class="row__mid">

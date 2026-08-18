@@ -317,18 +317,23 @@ function DepartureList({
 
   return (
     <ul class="board">
-      {groups.map((g) => (
-        <li key={g.route}>
-          <div class="rowgroup">Route {g.route}</div>
-          <ul class="board" style="border-top:none">
-            {g.items.map((d, i) => (
-              // The header names the route once; repeating it on every row
-              // below it is noise, so only the first row carries the number.
-              <BoardRow key={d.id} departure={d} now={now} showRoute={i === 0} />
-            ))}
-          </ul>
-        </li>
-      ))}
+      {groups.map((g) => {
+        // Under "Route 166" sit the 166, the 166T and the 166X, leaving minutes
+        // apart from different gates. Suppressing the number on repeat rows is
+        // right when they really are the same bus over and over, and actively
+        // misleading when they aren't — so a group with variants labels each.
+        const hasVariants = g.items.some((d) => d.service !== g.route)
+        return (
+          <li key={g.route}>
+            <div class="rowgroup">Route {g.route}</div>
+            <ul class="board" style="border-top:none">
+              {g.items.map((d, i) => (
+                <BoardRow key={d.id} departure={d} now={now} showRoute={hasVariants || i === 0} />
+              ))}
+            </ul>
+          </li>
+        )
+      })}
     </ul>
   )
 }
