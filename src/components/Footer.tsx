@@ -15,12 +15,40 @@ function ticketsUrl(): string {
   return APP_PAGE
 }
 
-export function Footer() {
+interface Props {
+  /** Client-side navigation; the links stay real links for crawlers and cmd-click. */
+  onNavigate: (href: string) => void
+}
+
+export function Footer({ onNavigate }: Props) {
   return (
     <footer class="foot">
       <a class="btn btn--amber" href={ticketsUrl()} target="_blank" rel="noopener noreferrer">
         Buy tickets in the NJ TRANSIT app
       </a>
+
+      <nav class="foot__nav" aria-label="Site">
+        <a
+          href="/"
+          onClick={(e: MouseEvent) => {
+            if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return
+            e.preventDefault()
+            onNavigate('/')
+          }}
+        >
+          All departures
+        </a>
+        <a
+          href="/routes"
+          onClick={(e: MouseEvent) => {
+            if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return
+            e.preventDefault()
+            onNavigate('/routes')
+          }}
+        >
+          Every bus route
+        </a>
+      </nav>
 
       <p class="foot__note">
         Departures come from NJ TRANSIT's DepartureVision feed. Gates can change at short

@@ -65,6 +65,15 @@ export default defineConfig({
       '/api': { target: `http://127.0.0.1:${API_PORT}`, changeOrigin: true },
     },
   },
+  // `vite preview` is how the prerendered pages get checked before a deploy —
+  // it needs the same API proxy, and it serves dist/bus/166/index.html the way
+  // Caddy does, so /bus/166 can be verified locally.
+  preview: {
+    port: 5184,
+    proxy: {
+      '/api': { target: `http://127.0.0.1:${API_PORT}`, changeOrigin: true },
+    },
+  },
   build: {
     target: 'es2022',
     sourcemap: false,

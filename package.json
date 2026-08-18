@@ -3,16 +3,17 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Which bus, which gate, how long — a departure board for Port Authority.",
+  "description": "Which bus, which gate, how long \u2014 a departure board for Port Authority.",
   "scripts": {
     "dev": "concurrently -n web,api -c cyan,magenta \"vite\" \"node --watch server/index.mjs\"",
     "dev:web": "vite",
     "dev:api": "node --watch server/index.mjs",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && node scripts/prerender.mjs",
     "preview": "vite preview",
     "start": "node server/index.mjs",
     "typecheck": "tsc -b --noEmit",
-    "stops": "node scripts/refresh-stops.mjs"
+    "stops": "node scripts/refresh-stops.mjs",
+    "routes": "node scripts/refresh-routes.mjs"
   },
   "dependencies": {
     "preact": "^10.24.3"

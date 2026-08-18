@@ -4,12 +4,14 @@ import { NextUp } from './components/NextUp'
 import { BoardRow } from './components/BoardRow'
 import { Controls } from './components/Controls'
 import { StopPicker } from './components/StopPicker'
+import { RouteIndex } from './components/RouteIndex'
 import { Footer } from './components/Footer'
 
 import { fetchBoard, fetchStops, loadLastBoard, saveLastBoard } from './lib/api'
 import { loadPrefs, savePrefs, type Prefs } from './lib/prefs'
 import { filterDepartures, routesOf, sortDepartures } from './lib/board'
 import { agoLabel } from './lib/time'
+import { applyMeta, go, HOME, metaFor, parseView, type View } from './lib/routing'
 import type { Board, Freshness, SortMode, Stop } from './lib/types'
 
 // Matches the server's cache TTL — polling faster only re-reads the same board.
@@ -21,6 +23,10 @@ const STALE_AFTER_MS = 60_000
 
 export function App() {
   const [prefs, setPrefs] = useState<Prefs>(() => loadPrefs())
+  // The URL is the source of truth for which routes the board shows, so a
+  // filtered board can be linked, shared and indexed. Prefs still hold the
+  // rider's own routes for the next cold start.
+  const [view, setView] = useState<View>(() => parseView(location.pathname, location.search))
   const [stops, setStops] = useState<Stop[]>([])
   const [defaultStopId, setDefaultStopId] = useState('')
   const [board, setBoard] = useState<Board | null>(() => loadLastBoard())
@@ -31,6 +37,32 @@ export function App() {
   const [now, setNow] = useState(() => Date.now())
 
   const abortRef = useRef<AbortController | null>(null)
+
+  const show = useCallback((next: View, { replace = false } = {}) => {
+    setView(next)
+    go(next, { replace })
+    if (!next.index) savePrefs({ ...loadPrefs(), pinnedRoutes: next.routes })
+  }, [])
+
+  // Back and forward have to work: on a phone this is installed to the home
+  // screen, where the swipe-back gesture is the only way out of a route page.
+  useEffect(() => {
+    const onPop = () => setView(parseView(location.pathname, location.search))
+    window.addEventListener('popstate', onPop)
+    return () => window.removeEventListener('popstate', onPop)
+  }, [])
+
+  // A rider who pinned the 166 last week should still land on it, but the
+  // address bar has to admit that's what happened — otherwise "/" and the board
+  // on screen disagree, and sharing the link sends the wrong board.
+  useEffect(() => {
+    const saved = loadPrefs().pinnedRoutes
+    if (location.pathname === '/' && !location.search && saved.length > 0) {
+      setView({ routes: saved, index: false })
+      go({ routes: saved, index: false }, { replace: true })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const update = useCallback((patch: Partial<Prefs>) => {
     setPrefs((prev) => {
@@ -153,12 +185,12 @@ export function App() {
   const visible = useMemo(() => {
     if (!board) return []
     const filtered = filterDepartures(board.departures, {
-      pinnedRoutes: prefs.pinnedRoutes,
-      onlyPinned: prefs.pinnedRoutes.length > 0,
+      pinnedRoutes: view.routes,
+      onlyPinned: view.routes.length > 0,
       now,
     })
     return sortDepartures(filtered, prefs.sort)
-  }, [board, prefs.pinnedRoutes, prefs.sort, now])
+  }, [board, view.routes, prefs.sort, now])
 
   // The hero is always the soonest bus the rider can still catch, regardless of
   // how the list below happens to be sorted.
@@ -169,15 +201,23 @@ export function App() {
 
   const togglePin = useCallback(
     (route: string) => {
-      const set = new Set(prefs.pinnedRoutes)
+      const set = new Set(view.routes)
       if (set.has(route)) set.delete(route)
       else set.add(route)
-      update({ pinnedRoutes: [...set] })
+      show({ routes: [...set], index: false })
     },
-    [prefs.pinnedRoutes, update],
+    [view.routes, show],
   )
 
   const stopName = board?.stop.short ?? board?.stop.name ?? 'Loading'
+
+  // Keep the tab title and the description meta in step with the view. The
+  // prerendered pages ship the same strings, so a cold load and a tap through
+  // land on the same page in every sense.
+  useEffect(() => {
+    if (!board) return
+    applyMeta(metaFor(view, board.stop.short ?? board.stop.name))
+  }, [view, board])
 
   // ── render ────────────────────────────────────────────────────────────────
 
@@ -242,33 +282,51 @@ export function App() {
           </div>
         )}
 
-        {loading && !board ? (
-          <BoardSkeleton />
-        ) : next ? (
-          <>
-            <NextUp departure={next} now={now} />
-
-            <Controls
-              sort={prefs.sort}
-              onSort={(sort: SortMode) => update({ sort })}
-              routes={allRoutes}
-              pinnedRoutes={prefs.pinnedRoutes}
-              onTogglePin={togglePin}
-              onClearPins={() => update({ pinnedRoutes: [] })}
-            />
-
-            <DepartureList departures={visible} sort={prefs.sort} now={now} />
-          </>
-        ) : (
-          <EmptyState
-            error={error}
-            filtered={prefs.pinnedRoutes.length > 0 && (board?.departures.length ?? 0) > 0}
-            onClearPins={() => update({ pinnedRoutes: [] })}
-            onRetry={() => stopId && load(stopId)}
+        {view.index ? (
+          <RouteIndex
+            stopName={stopName}
+            onNavigate={(href) => show(parseView(new URL(href, location.origin).pathname, ''))}
           />
+        ) : (
+          <>
+            <PageHeading view={view} stopName={stopName} onClear={() => show(HOME)} />
+
+            {loading && !board ? (
+              <BoardSkeleton />
+            ) : next ? (
+              // Two columns above 1024px: the hero and the filters hold still on
+              // the left while the board scrolls on the right. On a phone the
+              // grid collapses and the order is what it always was.
+              <div class="layout">
+                <div class="layout__side">
+                  <NextUp departure={next} now={now} />
+
+                  <Controls
+                    sort={prefs.sort}
+                    onSort={(sort: SortMode) => update({ sort })}
+                    routes={allRoutes}
+                    pinnedRoutes={view.routes}
+                    onTogglePin={togglePin}
+                    onClearPins={() => show(HOME)}
+                  />
+                </div>
+
+                <div class="layout__main">
+                  <DepartureList departures={visible} sort={prefs.sort} now={now} />
+                </div>
+              </div>
+            ) : (
+              <EmptyState
+                error={error}
+                filtered={view.routes.length > 0 && (board?.departures.length ?? 0) > 0}
+                onClearPins={() => show(HOME)}
+                onRetry={() => stopId && load(stopId)}
+              />
+            )}
+          </>
         )}
 
-        <Footer />
+        <Footer onNavigate={(href) => show(parseView(new URL(href, location.origin).pathname, ''))} />
       </main>
 
       {picking && stops.length > 0 && (
@@ -276,7 +334,8 @@ export function App() {
           stops={stops}
           currentId={stopId}
           onPick={(id) => {
-            update({ stopId: id, pinnedRoutes: [] })
+            update({ stopId: id })
+            show(HOME)
             setPicking(false)
             setLoading(true)
           }}
@@ -284,6 +343,42 @@ export function App() {
         />
       )}
     </>
+  )
+}
+
+/**
+ * The one <h1> on the page.
+ *
+ * On the full board it's for screen readers and search engines only — the
+ * header already says which terminal this is, and a rider running for a bus
+ * doesn't need a second title. A route page earns a visible one: it's a
+ * different page, and the number is the thing being looked up.
+ */
+function PageHeading({
+  view,
+  stopName,
+  onClear,
+}: {
+  view: View
+  stopName: string
+  onClear: () => void
+}) {
+  if (view.routes.length === 0) {
+    return <h1 class="sr">Live NJ TRANSIT bus departures from {stopName}</h1>
+  }
+
+  return (
+    <div class="phead">
+      <h1 class="phead__title">
+        {view.routes.length === 1 ? `Bus ${view.routes[0]}` : `Buses ${view.routes.join(', ')}`}
+      </h1>
+      <p class="phead__sub">
+        Live departures from {stopName} ·{' '}
+        <button type="button" class="linkish" onClick={onClear}>
+          all routes
+        </button>
+      </p>
+    </div>
   )
 }
 
