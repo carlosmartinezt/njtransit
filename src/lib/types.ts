@@ -25,6 +25,8 @@ export interface Stop {
   city: string | null
   terminal?: boolean
   verified?: boolean
+  /** False when the server doesn't list this stop — usually a stale saved id. */
+  known?: boolean
 }
 
 export interface Board {

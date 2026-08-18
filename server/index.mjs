@@ -133,13 +133,20 @@ async function cached(key, produce) {
 // ── board assembly ────────────────────────────────────────────────────────────
 
 async function buildBoard({ stopId, route, direction, ip }) {
-  const stop = findStop(stopId) ?? {
-    id: stopId,
-    name: `Stop ${stopId}`,
-    short: `Stop ${stopId}`,
-    city: null,
-    terminal: false,
-  }
+  // `known: false` is how the client tells a stop we no longer list apart from
+  // one that is simply quiet right now — a rider whose saved stop id was
+  // retired gets moved back to the default instead of staring at an empty board.
+  const match = findStop(stopId)
+  const stop = match
+    ? { ...match, known: true }
+    : {
+        id: stopId,
+        name: `Stop ${stopId}`,
+        short: `Stop ${stopId}`,
+        city: null,
+        terminal: false,
+        known: false,
+      }
 
   const key = `${stopId}|${route ?? ''}|${direction ?? ''}`
 
