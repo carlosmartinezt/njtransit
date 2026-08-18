@@ -1,3 +1,5 @@
+import { useCallback, useEffect, useRef } from 'preact/hooks'
+
 import type { SortMode } from '../lib/types'
 
 interface Props {
@@ -24,6 +26,30 @@ export function Controls({
   onClearPins,
 }: Props) {
   const pinned = new Set(pinnedRoutes)
+  const strip = useRef<HTMLDivElement | null>(null)
+
+  // The strip scrolls sideways, which a touchscreen does for free and a mouse
+  // does not: a trackpad swipe works, a wheel doesn't, and the scrollbar is
+  // hidden. Above 1024px the chips wrap instead and this never fires; in a
+  // narrow desktop window it turns the wheel a rider actually has into the
+  // scroll they're trying to do.
+  // Arriving on /bus/166 with 60 routes listed, the filtered one is usually
+  // out of sight — off the right edge on a phone, below the fold in the wrapped
+  // desktop list. Bring it to the rider rather than making them hunt for the
+  // chip that explains what they're looking at.
+  useEffect(() => {
+    const el = strip.current
+    if (!el || pinnedRoutes.length === 0) return
+    el.querySelector('[aria-pressed="true"]')?.scrollIntoView({ block: 'nearest', inline: 'center' })
+  }, [pinnedRoutes.join(',')])
+
+  const onWheel = useCallback((e: WheelEvent) => {
+    const el = strip.current
+    if (!el || el.scrollWidth <= el.clientWidth) return
+    if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return
+    e.preventDefault()
+    el.scrollLeft += e.deltaY
+  }, [])
 
   return (
     <>
@@ -57,7 +83,7 @@ export function Controls({
       </div>
 
       {routes.length > 1 && (
-        <div class="chips" role="group" aria-label="Filter by route">
+        <div class="chips" role="group" aria-label="Filter by route" ref={strip} onWheel={onWheel}>
           {routes.map((r) => (
             <button
               key={r}

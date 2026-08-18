@@ -778,6 +778,132 @@ a {
   border: 0;
 }
 
+/* ── page heading & route index ────────────────────────────────────────────── */
+
+/* A route page is a different page and says so, but a rider who tapped a chip
+   is mid-task — so the heading stays one line and never pushes the next
+   departure below the fold. */
+.phead {
+  padding: 14px 0 2px;
+}
+
+.phead__title {
+  font-family: var(--cond);
+  font-weight: 700;
+  font-size: 30px;
+  letter-spacing: 0.01em;
+  margin: 0;
+}
+
+.phead__sub {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--dim);
+}
+
+.index {
+  padding: 18px 0 8px;
+}
+
+.index__title {
+  font-family: var(--cond);
+  font-weight: 700;
+  font-size: 26px;
+  margin: 0 0 6px;
+}
+
+.index__lede {
+  margin: 0 0 18px;
+  color: var(--dim);
+  font-size: 14px;
+  max-width: 52ch;
+}
+
+.index__grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+}
+
+.rcard {
+  display: grid;
+  gap: 2px;
+  padding: 12px 14px;
+  border: 1px solid var(--edge);
+  border-radius: var(--r-sm);
+  background: var(--ink-raised);
+  text-decoration: none;
+  color: inherit;
+}
+
+.rcard:hover {
+  background: var(--panel);
+  border-color: var(--panel-hi);
+}
+
+.rcard__num {
+  font-family: var(--cond);
+  font-weight: 700;
+  font-size: 22px;
+  color: var(--chalk);
+}
+
+.rcard__to {
+  font-size: 12px;
+  color: var(--dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rcard__hours {
+  font-size: 11px;
+  color: var(--dimmer);
+}
+
+.foot__nav {
+  display: flex;
+  gap: 16px;
+  margin: 14px 0 2px;
+  font-size: 13px;
+}
+
+.foot__nav a {
+  color: var(--dim);
+}
+
+/* The prerendered copy a crawler reads. Scripts remove it the moment the board
+   renders, so this styling is only ever seen with JavaScript off — but that's
+   exactly the visitor who deserves a readable page rather than raw markup. */
+#static {
+  max-width: var(--shell);
+  margin: 0 auto;
+  padding: 24px var(--gut) 40px;
+  color: var(--dim);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+#static h1 {
+  font-family: var(--cond);
+  font-weight: 700;
+  font-size: 28px;
+  color: var(--chalk);
+  margin: 0 0 10px;
+}
+
+#static a {
+  color: var(--amber);
+}
+
+#static ul {
+  columns: 2;
+  padding-left: 18px;
+}
+
 /* ── responsive ────────────────────────────────────────────────────────────── */
 
 @media (min-width: 480px) {
@@ -800,6 +926,89 @@ a {
 
   .row__route {
     font-size: 28px;
+  }
+}
+
+/* ── desktop ───────────────────────────────────────────────────────────────── */
+
+/* Below this the board is a single column, which is right on a phone and right
+   in a narrow window. Above it there is room to stop making a desktop visitor
+   scroll past the hero to reach the departures. */
+@media (min-width: 1024px) {
+  :root {
+    --shell: 1140px;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(320px, 380px) 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+
+  /* The next departure and the filters hold still while the board scrolls —
+     the gate stays on screen for the whole scan, which is the one number the
+     rider is there for. */
+  .layout__side {
+    position: sticky;
+    top: 76px;
+  }
+
+  /* Wrapped, not a scroller: a mouse has no sideways swipe, and at Port
+     Authority this is 60+ routes. Capped so the list can't push the board off
+     screen, and scrollable vertically for the overflow — which a wheel does. */
+  .chips {
+    flex-wrap: wrap;
+    overflow-x: hidden;
+    overflow-y: auto;
+    /* Five rows exactly — a cap landing mid-row leaves half-height chips along
+       the bottom edge, which reads as a rendering fault rather than a hint that
+       the list continues. 34px chip + 6px gap. */
+    max-height: 200px;
+    scroll-snap-type: none;
+    scrollbar-width: thin;
+    scrollbar-color: var(--edge) transparent;
+    padding-bottom: 4px;
+  }
+
+  .chips::-webkit-scrollbar {
+    display: block;
+    width: 8px;
+  }
+
+  .chips::-webkit-scrollbar-thumb {
+    background: var(--edge);
+    border-radius: 999px;
+  }
+
+  .row {
+    grid-template-columns: 76px 1fr auto;
+    padding: 15px 4px;
+  }
+
+  .phead {
+    padding-top: 20px;
+  }
+
+  .phead__title {
+    font-size: 34px;
+  }
+
+  .foot {
+    max-width: none;
+  }
+}
+
+/* Pointer-driven affordances. A phone gets none of this; a desktop gets the
+   feedback that tells it these rows and chips are live things. */
+@media (hover: hover) and (pointer: fine) {
+  .chip:hover {
+    border-color: var(--dim);
+    color: var(--chalk);
+  }
+
+  .row:hover {
+    background: color-mix(in srgb, var(--ink-raised) 60%, transparent);
   }
 }
 
