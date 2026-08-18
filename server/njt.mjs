@@ -165,15 +165,29 @@ function cleanText(v) {
 }
 
 /**
- * NJ Transit uses "lanegate" for both terminal gates ("225") and street stops
- * ("GATE 225", "-", ""). Normalize to just the identifier, or null when the
- * bus boards somewhere without a gate.
+ * BUSDV2 fills absent fields with the literal strings "EMPTY" and "no data"
+ * instead of leaving them blank, so every optional field has to be read through
+ * this or the sentinel lands on the board as if it were real content.
+ */
+const ABSENT = new Set(['', '-', '--', 'N/A', 'TBD', 'EMPTY', 'NO DATA', 'NULL'])
+function present(v) {
+  const s = cleanText(v)
+  return ABSENT.has(s.toUpperCase()) ? '' : s
+}
+
+/**
+ * NJ Transit uses "lanegate" for both terminal gates and street stops, and at
+ * Port Authority it appends the boarding position: "212_1" is gate 212, lane 1.
+ * Riders navigate by the gate, so keep that and drop the suffix. Street stops
+ * arrive as "GATE 225" or a bare number; absent ones as "EMPTY".
  */
 function normalizeGate(raw) {
-  const s = str(raw).toUpperCase()
-  if (!s || s === '-' || s === '--' || s === 'N/A' || s === 'TBD') return null
-  const m = /(?:GATE|LANE|BAY)?\s*([A-Z]?\d{1,4}[A-Z]?)$/.exec(s)
-  return m ? m[1] : s
+  const s = present(raw).toUpperCase()
+  if (!s) return null
+  const base = s.split('_')[0].trim()
+  if (!base) return null
+  const m = /(?:GATE|LANE|BAY)?\s*([A-Z]?\d{1,4}[A-Z]?)$/.exec(base)
+  return m ? m[1] : base
 }
 
 /**
@@ -181,9 +195,9 @@ function normalizeGate(raw) {
  * Unknown codes pass through as null rather than guessing.
  */
 function normalizeLoad(raw) {
-  const s = str(raw).toUpperCase()
+  const s = present(raw).toUpperCase()
   if (!s) return null
-  if (/^(1|LIGHT|EMPTY|MANY SEATS)/.test(s)) return 'light'
+  if (/^(1|LIGHT|MANY SEATS)/.test(s)) return 'light'
   if (/^(2|MEDIUM|MODERATE|FEW SEATS)/.test(s)) return 'medium'
   if (/^(3|HEAVY|FULL|CROWDED|STANDING)/.test(s)) return 'heavy'
   return null
@@ -204,7 +218,12 @@ function asTrips(payload) {
  * the same normalization applies to live data, cached data, and sample data.
  */
 export function normalizeDepartures(payload, { at = Date.now() } = {}) {
-  const notice = cleanText(payload?.message?.message ?? payload?.message) || null
+  // BUSDV2 sends the banner as either a bare string or {message: "..."},
+  // and an empty board as {message: {message: null}} — so unwrap one level
+  // and only keep a string. Coercing the object itself yields "[object Object]".
+  const rawNotice = payload?.message
+  const noticeText = typeof rawNotice === 'string' ? rawNotice : rawNotice?.message
+  const notice = (typeof noticeText === 'string' ? cleanText(noticeText) : '') || null
 
   const departures = asTrips(payload)
     .map((t, i) => {
@@ -216,7 +235,7 @@ export function normalizeDepartures(payload, { at = Date.now() } = {}) {
 
       // "Live" means NJT gave a prediction that differs from the timetable, or
       // attached a vehicle to the trip. Otherwise it's just the schedule.
-      const vehicle = str(t.vehicle_id ?? t.vehicleID) || null
+      const vehicle = present(t.vehicle_id ?? t.vehicleID) || null
       const isLive = Boolean(vehicle) || (predicted != null && predicted !== scheduled)
 
       const departsAt = predicted ?? scheduled
@@ -241,7 +260,7 @@ export function normalizeDepartures(payload, { at = Date.now() } = {}) {
         isLive,
         vehicle,
         load: normalizeLoad(t.passload ?? t.passLoad),
-        remarks: cleanText(t.remarks) || null,
+        remarks: present(t.remarks) || null,
       }
     })
     // A board with no usable time is noise; keep NJT's status text only when it
