@@ -14,6 +14,8 @@
     "isolatedModules": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
+    // src/lib/seo.mjs is shared with the build script, which can't read TS.
+    "allowJs": true,
     "allowImportingTsExtensions": true,
     "types": ["vite/client", "vite-plugin-pwa/client"]
   },

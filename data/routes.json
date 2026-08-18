@@ -1,0 +1,744 @@
+{
+ "stopId": "26229",
+ "stop": "Port Authority Bus Terminal",
+ "routes": [
+  {
+   "route": "101",
+   "destinations": [
+    "WEST ORANGE EXPRESS"
+   ],
+   "weekdayTrips": 6,
+   "firstDeparture": "4:15 PM",
+   "lastDeparture": "7:45 PM"
+  },
+  {
+   "route": "102",
+   "destinations": [
+    "BLOOMFIELD EXPRESS"
+   ],
+   "weekdayTrips": 10,
+   "firstDeparture": "3:30 PM",
+   "lastDeparture": "8:00 PM"
+  },
+  {
+   "route": "105",
+   "destinations": [
+    "W CALDWELL EXPRESS"
+   ],
+   "weekdayTrips": 4,
+   "firstDeparture": "4:30 PM",
+   "lastDeparture": "7:30 PM"
+  },
+  {
+   "route": "107",
+   "destinations": [
+    "IRVINGTON S ORANGE VIA IVY HILL",
+    "IRVINGTON IVY HILL",
+    "IRVINGTON SOUTH ORANGE",
+    "IRVINGTON TERMINAL",
+    "IRVINGTON IVY HILL & S ORANGE",
+    "IRVINGTON S ORANGE"
+   ],
+   "weekdayTrips": 65,
+   "firstDeparture": "6:00 AM",
+   "lastDeparture": "1:50 AM"
+  },
+  {
+   "route": "108",
+   "destinations": [
+    "NEWARK"
+   ],
+   "weekdayTrips": 27,
+   "firstDeparture": "6:05 AM",
+   "lastDeparture": "1:20 AM"
+  },
+  {
+   "route": "109",
+   "destinations": [
+    "KEARNY HARRISON LYNDHURST N ARLINGTON",
+    "LYNDHURST N ARLINGTON BELLEVILLE N NEWARK"
+   ],
+   "weekdayTrips": 12,
+   "firstDeparture": "3:40 PM",
+   "lastDeparture": "8:00 PM"
+  },
+  {
+   "route": "111",
+   "destinations": [
+    "JERSEY GARDENS AND IKEA ELIZABETH",
+    "JERSEY GARDENS MALL"
+   ],
+   "weekdayTrips": 22,
+   "firstDeparture": "8:15 AM",
+   "lastDeparture": "4:20 PM"
+  },
+  {
+   "route": "112",
+   "destinations": [
+    "CLARK TERMINAL AVE",
+    "SCOTCH PLAINS UNION TECH",
+    "CLARK LAKE/SCHWINN"
+   ],
+   "weekdayTrips": 23,
+   "firstDeparture": "6:35 AM",
+   "lastDeparture": "11:35 PM"
+  },
+  {
+   "route": "113",
+   "destinations": [
+    "DUNELLEN SALEM ROAD",
+    "DUNELLEN NORTH AVE",
+    "DUNELLEN PARKWAY EXP",
+    "CRANFORD NORTH AVE",
+    "CRANFORD SALEM ROAD",
+    "PLAINFIELD"
+   ],
+   "weekdayTrips": 50,
+   "firstDeparture": "7:30 AM",
+   "lastDeparture": "12:05 AM"
+  },
+  {
+   "route": "114",
+   "destinations": [
+    "BRIDGEWATER COMMONS",
+    "MOUNTAINSIDE ECHO PLAZA",
+    "BRIDGEWATER EXPRESS",
+    "SOMERVILLE",
+    "DUNELLEN",
+    "DUNELLEN EXPRESS"
+   ],
+   "weekdayTrips": 52,
+   "firstDeparture": "6:20 AM",
+   "lastDeparture": "12:30 AM"
+  },
+  {
+   "route": "115",
+   "destinations": [
+    "AVENEL VIA JERSEY GARDENS",
+    "AVENEL",
+    "RAHWAY",
+    "RAHWAY VIA ELIZABETH AVE"
+   ],
+   "weekdayTrips": 23,
+   "firstDeparture": "6:45 AM",
+   "lastDeparture": "11:50 PM"
+  },
+  {
+   "route": "116",
+   "destinations": [
+    "PERTH AMBOY"
+   ],
+   "weekdayTrips": 34,
+   "firstDeparture": "6:15 AM",
+   "lastDeparture": "12:30 AM"
+  },
+  {
+   "route": "117",
+   "destinations": [
+    "SOMERVILLE RT 22 EXPRESS"
+   ],
+   "weekdayTrips": 4,
+   "firstDeparture": "5:02 PM",
+   "lastDeparture": "7:22 PM"
+  },
+  {
+   "route": "119",
+   "destinations": [
+    "JERSEY CITY BAYONNE",
+    "JERSEY CITY JFK BLVD & TONNELLE",
+    "JERSEY CITY AND BAYONNE VIA JOURNAL SQUARE",
+    "JERSEY CITY JFK BLVD & PAMRAPO"
+   ],
+   "weekdayTrips": 86,
+   "firstDeparture": "4:15 AM",
+   "lastDeparture": "2:15 AM"
+  },
+  {
+   "route": "121",
+   "destinations": [
+    "NORTH BERGEN WESTSIDE AVE"
+   ],
+   "weekdayTrips": 3,
+   "firstDeparture": "6:20 AM",
+   "lastDeparture": "7:50 AM"
+  },
+  {
+   "route": "122",
+   "destinations": [
+    "SECAUCUS CUL-DE-SAC"
+   ],
+   "weekdayTrips": 14,
+   "firstDeparture": "7:00 AM",
+   "lastDeparture": "7:30 PM"
+  },
+  {
+   "route": "123",
+   "destinations": [
+    "JERSEY CITY CHRIST HOSP",
+    "UNION CITY CONGRESS STA"
+   ],
+   "weekdayTrips": 91,
+   "firstDeparture": "6:20 AM",
+   "lastDeparture": "1:15 AM"
+  },
+  {
+   "route": "124",
+   "destinations": [
+    "SECAUCUS JUNCTION COUNTY AVE & CASTLE RD",
+    "SECAUCUS COUNTY AVE & UPS DR"
+   ],
+   "weekdayTrips": 9,
+   "firstDeparture": "3:30 AM",
+   "lastDeparture": "10:30 PM"
+  },
+  {
+   "route": "125",
+   "destinations": [
+    "JERSEY CITY JOURNAL SQUARE"
+   ],
+   "weekdayTrips": 29,
+   "firstDeparture": "7:40 AM",
+   "lastDeparture": "12:50 AM"
+  },
+  {
+   "route": "126",
+   "destinations": [
+    "HOBOKEN-PATH",
+    "HOBOKEN VIA WILLOW AVE",
+    "HAMILTON PK VIA WILLOW AV",
+    "HAMILTON PK VIA HOBOKEN"
+   ],
+   "weekdayTrips": 191,
+   "firstDeparture": "5:35 AM",
+   "lastDeparture": "2:00 AM"
+  },
+  {
+   "route": "127",
+   "destinations": [
+    "RIDGEFIELD VICTORIA TER",
+    "FAIRVIEW",
+    "RIDGEFIELD VIA SHALER BLVD"
+   ],
+   "weekdayTrips": 25,
+   "firstDeparture": "6:15 AM",
+   "lastDeparture": "12:15 AM"
+  },
+  {
+   "route": "128",
+   "destinations": [
+    "NORTH BERGEN VIA BLVD EAST"
+   ],
+   "weekdayTrips": 97,
+   "firstDeparture": "2:25 PM",
+   "lastDeparture": "2:00 AM"
+  },
+  {
+   "route": "129",
+   "destinations": [
+    "SECAUCUS JUNCTION VIA SECAUCUS PLAZA",
+    "SECAUCUS JUNCTION",
+    "SECAUCUS HARMON COVE EXPRESS"
+   ],
+   "weekdayTrips": 33,
+   "firstDeparture": "6:05 AM",
+   "lastDeparture": "11:30 PM"
+  },
+  {
+   "route": "130",
+   "destinations": [
+    "UNION HILL EXP FREEHOLD MALL UNION HILL EXP CASINO DRIV",
+    "UN HILL EXP LAKEWOOD VIA FREEHOLD MALL"
+   ],
+   "weekdayTrips": 20,
+   "firstDeparture": "1:30 PM",
+   "lastDeparture": "8:00 PM"
+  },
+  {
+   "route": "131",
+   "destinations": [
+    "SAYREVILLE",
+    "FREEHOLD HENCE BLVD FREEHOLD VIA SAYREVILLE"
+   ],
+   "weekdayTrips": 12,
+   "firstDeparture": "3:30 PM",
+   "lastDeparture": "8:30 PM"
+  },
+  {
+   "route": "132",
+   "destinations": [
+    "GORDONS CORNER EXP CASINO DRIVE"
+   ],
+   "weekdayTrips": 13,
+   "firstDeparture": "3:45 PM",
+   "lastDeparture": "6:30 PM"
+  },
+  {
+   "route": "133",
+   "destinations": [
+    "OLD BRIDGE VIA RT 516",
+    "OLD BRIDGE VIA RT 34",
+    "OLD BRIDGE VIA RT 516 OLD BRIDGE & RT 34"
+   ],
+   "weekdayTrips": 14,
+   "firstDeparture": "2:50 PM",
+   "lastDeparture": "9:00 PM"
+  },
+  {
+   "route": "135",
+   "destinations": [
+    "FREEHOLD CTR VIA MATAWAN"
+   ],
+   "weekdayTrips": 4,
+   "firstDeparture": "4:55 PM",
+   "lastDeparture": "6:25 PM"
+  },
+  {
+   "route": "136",
+   "destinations": [
+    "FREEHOLD MALL EXPRESS LAKEWOOD"
+   ],
+   "weekdayTrips": 13,
+   "firstDeparture": "3:30 PM",
+   "lastDeparture": "7:00 PM"
+  },
+  {
+   "route": "137",
+   "destinations": [
+    "TOMS RIVER PARKWAY EXP",
+    "SEASIDE PARK VIA TOMS RIVER PARKWAY EXP",
+    "TOMS RIVER VIA BRICK TWP PARKWAY EXP",
+    "LAKEWOOD VIA COUNTY LINE PARKWAY EXP"
+   ],
+   "weekdayTrips": 19,
+   "firstDeparture": "10:00 AM",
+   "lastDeparture": "8:15 PM"
+  },
+  {
+   "route": "138",
+   "destinations": [
+    "OLD BRIDGE FERRY ROAD",
+    "MONROE VIA SPOTSWOOD",
+    "OLD BRIDGE MONROE- SPOTSWOOD"
+   ],
+   "weekdayTrips": 9,
+   "firstDeparture": "3:45 PM",
+   "lastDeparture": "7:00 PM"
+  },
+  {
+   "route": "139",
+   "destinations": [
+    "LAKEWOOD VIA FREEHOLD CENTER",
+    "LAKEWOOD VIA FREEHOLD CENTER/MALL",
+    "HOWELL TWP CASINO DRIVE",
+    "HOWELL ALDRICH P/R",
+    "MARLBORO UNION HIL P/R",
+    "OLD BRIDGE PARK/RIDE EXP"
+   ],
+   "weekdayTrips": 90,
+   "firstDeparture": "4:00 AM",
+   "lastDeparture": "2:30 AM"
+  },
+  {
+   "route": "144",
+   "destinations": [
+    "ROCHELLE PK VIA TETERBORO",
+    "ELMWOOD PARK EXPRESS",
+    "HACKENSACK VIA TETERBORO"
+   ],
+   "weekdayTrips": 11,
+   "firstDeparture": "6:20 AM",
+   "lastDeparture": "6:20 PM"
+  },
+  {
+   "route": "145",
+   "destinations": [
+    "FAIR LAWN EXPRESS"
+   ],
+   "weekdayTrips": 5,
+   "firstDeparture": "4:45 PM",
+   "lastDeparture": "7:00 PM"
+  },
+  {
+   "route": "148",
+   "destinations": [
+    "MIDLAND PARK EXPRESS"
+   ],
+   "weekdayTrips": 2,
+   "firstDeparture": "5:20 PM",
+   "lastDeparture": "6:20 PM"
+  },
+  {
+   "route": "151",
+   "destinations": [
+    "PATERSON EXPRESS"
+   ],
+   "weekdayTrips": 6,
+   "firstDeparture": "3:50 PM",
+   "lastDeparture": "6:20 PM"
+  },
+  {
+   "route": "153",
+   "destinations": [
+    "FORT LEE TURNPIKE EXP CLIFFSIDE PARK"
+   ],
+   "weekdayTrips": 1,
+   "firstDeparture": "5:45 PM",
+   "lastDeparture": "5:45 PM"
+  },
+  {
+   "route": "154",
+   "destinations": [
+    "FORT LEE",
+    "FORT LEE EXPRESS"
+   ],
+   "weekdayTrips": 34,
+   "firstDeparture": "6:00 AM",
+   "lastDeparture": "11:00 PM"
+  },
+  {
+   "route": "155",
+   "destinations": [
+    "TEANECK EXPRESS"
+   ],
+   "weekdayTrips": 6,
+   "firstDeparture": "4:24 PM",
+   "lastDeparture": "6:48 PM"
+  },
+  {
+   "route": "156",
+   "destinations": [
+    "ENGLEWOOD CLIFFS VIA PARK AVE",
+    "ENGLEWOOD CLIFFS VIA RIVER ROAD",
+    "FORT LEE VIA RIVER ROAD",
+    "NORTH BERGEN 91ST STREET VIA PARK AVE"
+   ],
+   "weekdayTrips": 62,
+   "firstDeparture": "6:20 AM",
+   "lastDeparture": "2:00 AM"
+  },
+  {
+   "route": "157",
+   "destinations": [
+    "TEANECK EXPRESS"
+   ],
+   "weekdayTrips": 4,
+   "firstDeparture": "4:10 PM",
+   "lastDeparture": "7:10 PM"
+  },
+  {
+   "route": "158",
+   "destinations": [
+    "FORT LEE MED WEST",
+    "FORT LEE HUDSON TER",
+    "FORT LEE"
+   ],
+   "weekdayTrips": 98,
+   "firstDeparture": "6:20 AM",
+   "lastDeparture": "1:30 AM"
+  },
+  {
+   "route": "159",
+   "destinations": [
+    "FORT LEE LINWOOD PARK",
+    "FAIRVIEW NJT GARAGE",
+    "FORT LEE LINWOOD PARK VIA RIVER ROAD",
+    "FAIRVIEW NJT GARAGE 60TH STREET EXPRESS",
+    "CLIFFSIDE PARK WINSTON TWRS",
+    "NORTH BERGEN 91ST STREET"
+   ],
+   "weekdayTrips": 123,
+   "firstDeparture": "5:00 AM",
+   "lastDeparture": "3:05 AM"
+  },
+  {
+   "route": "160",
+   "destinations": [
+    "ELMWOOD PARK VIA MEADOWLANDS & UNION CITY",
+    "ELMWOOD PARK",
+    "GARFIELD VIA MEADOWLANDS & UNION CITY"
+   ],
+   "weekdayTrips": 32,
+   "firstDeparture": "7:00 AM",
+   "lastDeparture": "12:10 AM"
+  },
+  {
+   "route": "161",
+   "destinations": [
+    "PATERSON VIA UNION CITY",
+    "PATERSON",
+    "PATERSON VIA COMMERCE BLVD",
+    "TETERBORO VIA COMMERCE BLVD",
+    "PASSAIC BUS TERMINAL"
+   ],
+   "weekdayTrips": 70,
+   "firstDeparture": "5:10 AM",
+   "lastDeparture": "1:15 AM"
+  },
+  {
+   "route": "162",
+   "destinations": [
+    "PARAMUS EXPRESS VIA PROSPECT AVE"
+   ],
+   "weekdayTrips": 13,
+   "firstDeparture": "3:40 PM",
+   "lastDeparture": "8:30 PM"
+  },
+  {
+   "route": "163",
+   "destinations": [
+    "RIDGEWOOD TERMINAL",
+    "PARAMUS ARCOLA",
+    "PARAMUS GS PLAZA/IKEA",
+    "HACKENSACK SUMMIT/ESSEX",
+    "PARAMUS GS PLAZA",
+    "UPPER RIDGEWOOD"
+   ],
+   "weekdayTrips": 98,
+   "firstDeparture": "5:50 AM",
+   "lastDeparture": "1:30 AM"
+  },
+  {
+   "route": "164",
+   "destinations": [
+    "MIDLAND PARK",
+    "MIDLAND PK EXPRESS",
+    "HACKENSACK EXPRESS MIDLAND PK",
+    "MIDLAND PK EXPRESS VIA MORLOT AVE",
+    "PARAMUS ARCOLA"
+   ],
+   "weekdayTrips": 34,
+   "firstDeparture": "6:50 AM",
+   "lastDeparture": "12:50 AM"
+  },
+  {
+   "route": "165",
+   "destinations": [
+    "WESTWOOD",
+    "ORADELL N MILFORD AV",
+    "NORTH HACKENSACK",
+    "PARKWAY EXPRESS WESTWOOD",
+    "RT 4 EXPRESS ORADELL ORADELL AVE",
+    "ORADELL ORADELL AVE"
+   ],
+   "weekdayTrips": 120,
+   "firstDeparture": "5:22 AM",
+   "lastDeparture": "1:10 AM"
+  },
+  {
+   "route": "166",
+   "destinations": [
+    "CRESSKILL",
+    "BERGENFIELD",
+    "DUMONT",
+    "PALISADES PK HOMESTEAD AV",
+    "LEONIA",
+    "TENAFLY"
+   ],
+   "weekdayTrips": 153,
+   "firstDeparture": "6:06 AM",
+   "lastDeparture": "3:35 AM"
+  },
+  {
+   "route": "167",
+   "destinations": [
+    "TEANECK RD DUMONT",
+    "TEANECK ROAD HARRINGTON PARK",
+    "DUMONT CHESTNUT BEND",
+    "NEW MILFORD",
+    "TEANECK RD TEANECK ARMORY",
+    "TEANECK QUEEN ANNE RD I-95 EXPRESS"
+   ],
+   "weekdayTrips": 77,
+   "firstDeparture": "6:15 AM",
+   "lastDeparture": "1:45 AM"
+  },
+  {
+   "route": "168",
+   "destinations": [
+    "PARAMUS PARK MALL",
+    "PARAMUS BERGEN TOWN CENTER",
+    "HACKENSACK",
+    "PARAMUS FAIRVIEW AVE",
+    "PARAMUS FARVIEW AVE"
+   ],
+   "weekdayTrips": 30,
+   "firstDeparture": "7:15 AM",
+   "lastDeparture": "12:55 AM"
+  },
+  {
+   "route": "177",
+   "destinations": [
+    "ARMORY EXPRESS HARRINGTON PARK",
+    "ARMORY EXPRESS NEW MILFORD",
+    "ARMORY EXPRESS DUMONT"
+   ],
+   "weekdayTrips": 38,
+   "firstDeparture": "2:25 PM",
+   "lastDeparture": "8:15 PM"
+  },
+  {
+   "route": "190",
+   "destinations": [
+    "PATERSON LOCAL",
+    "PATERSON LOCAL VIA UNION CITY",
+    "PATERSON EXPRESS VIA PASSAIC",
+    "RUTHERFORD EXPRESS",
+    "PATERSON LOCAL VIA DELAWANNA & PASSAIC AVE",
+    "PATERSON UNION CITY DELAWANNA & PASSAIC AVE"
+   ],
+   "weekdayTrips": 117,
+   "firstDeparture": "5:40 AM",
+   "lastDeparture": "4:00 AM"
+  },
+  {
+   "route": "191",
+   "destinations": [
+    "WILLOWBROOK",
+    "LITTLE FALLS WILLOWBROOK VIA MONTCLAIR HTS",
+    "ALLWOOD EXPRESS MONTCLAIR HTS WILLOWBROOK",
+    "ALLWOOD EXPRESS LITTLE FALLS WILLOWBROOK"
+   ],
+   "weekdayTrips": 20,
+   "firstDeparture": "6:00 AM",
+   "lastDeparture": "11:40 PM"
+  },
+  {
+   "route": "192",
+   "destinations": [
+    "CLIFTON EXPRESS VIA ALLWOOD PARK/RIDE",
+    "CLIFTON VIA NUTLEY",
+    "CLIFTON VIA LYND OFFICE PK",
+    "ALLWOOD CIRCLE VIA NUTLEY",
+    "CLIFTON"
+   ],
+   "weekdayTrips": 47,
+   "firstDeparture": "8:00 AM",
+   "lastDeparture": "11:10 PM"
+  },
+  {
+   "route": "193",
+   "destinations": [
+    "WILLOWBROOK"
+   ],
+   "weekdayTrips": 23,
+   "firstDeparture": "2:18 PM",
+   "lastDeparture": "7:45 PM"
+  },
+  {
+   "route": "194",
+   "destinations": [
+    "NEWFOUNDLAND VIA WILLOWBROOK",
+    "STOCKHOLM RT 23 EXP",
+    "STOCKHOLM RT 23 EXPRESS WAYNE TRN CTR & MOTHERS P/R",
+    "BUTLER EXPRESS VIA WAYNE TRANSIT CTR",
+    "BUTLER VIA WILLOWBROOK",
+    "WAYNE TRN CTR & MOTHERS P/R"
+   ],
+   "weekdayTrips": 29,
+   "firstDeparture": "6:00 AM",
+   "lastDeparture": "12:00 AM"
+  },
+  {
+   "route": "195",
+   "destinations": [
+    "CEDAR GROVE WILLOWBROOK",
+    "ROUTE 3 EXPRESS CEDAR GROVE WILLOWBROOK",
+    "CEDAR GROVE LITTLE FALLS",
+    "ALLWOOD EXPRESS CEDAR GROVE WILLOWBROOK"
+   ],
+   "weekdayTrips": 11,
+   "firstDeparture": "8:10 AM",
+   "lastDeparture": "10:20 PM"
+  },
+  {
+   "route": "196",
+   "destinations": [
+    "WARWICK SKYLINE EXP"
+   ],
+   "weekdayTrips": 9,
+   "firstDeparture": "3:10 PM",
+   "lastDeparture": "7:00 PM"
+  },
+  {
+   "route": "197",
+   "destinations": [
+    "WARWICK VIA WILLOWBROOK",
+    "RINGWOOD PARK/RIDE",
+    "POMPTON LAKES VIA WILLOWBROOK",
+    "POMPTON LAKES VIA RIVERVIEW DR",
+    "POMPTON LAKES  VIA TOTOWA & BLK OAK RD",
+    "WEST MILFORD PARK & RIDE"
+   ],
+   "weekdayTrips": 26,
+   "firstDeparture": "6:30 AM",
+   "lastDeparture": "12:30 AM"
+  },
+  {
+   "route": "198",
+   "destinations": [
+    "WAYNE WM PATERSON U WILLOWBROOK & WAYNE TRN CTR",
+    "WILLOWBROOK WAYNE TRN CT"
+   ],
+   "weekdayTrips": 10,
+   "firstDeparture": "6:50 AM",
+   "lastDeparture": "11:30 PM"
+  },
+  {
+   "route": "199",
+   "destinations": [
+    "CLIFTON VIA NUTLEY",
+    "ALLWOOD CIRCLE VIA NUTLEY",
+    "CLIFTON VIA LYN OFFICE PK"
+   ],
+   "weekdayTrips": 29,
+   "firstDeparture": "6:15 AM",
+   "lastDeparture": "12:40 AM"
+  },
+  {
+   "route": "319",
+   "destinations": [
+    "ATLANTIC CITY VIA TOMS RVR",
+    "CAPE MAY VIA OCEAN DRIVE"
+   ],
+   "weekdayTrips": 27,
+   "firstDeparture": "7:30 AM",
+   "lastDeparture": "11:30 PM"
+  },
+  {
+   "route": "320",
+   "destinations": [
+    "HARMON MEADOW MILL CREEK NORTH BERGEN PARK & RIDE"
+   ],
+   "weekdayTrips": 78,
+   "firstDeparture": "6:00 AM",
+   "lastDeparture": "2:00 AM"
+  },
+  {
+   "route": "321",
+   "destinations": [
+    "VINCE LOMBARDI PARK & RIDE"
+   ],
+   "weekdayTrips": 29,
+   "firstDeparture": "8:15 AM",
+   "lastDeparture": "11:30 PM"
+  },
+  {
+   "route": "324",
+   "destinations": [
+    "WAYNE TRN CTR EXPRESS WAYNE MOTHERS P/R"
+   ],
+   "weekdayTrips": 16,
+   "firstDeparture": "3:10 PM",
+   "lastDeparture": "7:30 PM"
+  },
+  {
+   "route": "355",
+   "destinations": [
+    "AMERICAN DREAM"
+   ],
+   "weekdayTrips": 4,
+   "firstDeparture": "9:30 AM",
+   "lastDeparture": "12:30 PM"
+  }
+ ]
+}
