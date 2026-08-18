@@ -22,6 +22,7 @@ const STALE_AFTER_MS = 60_000
 export function App() {
   const [prefs, setPrefs] = useState<Prefs>(() => loadPrefs())
   const [stops, setStops] = useState<Stop[]>([])
+  const [defaultStopId, setDefaultStopId] = useState('')
   const [board, setBoard] = useState<Board | null>(() => loadLastBoard())
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
@@ -68,10 +69,11 @@ export function App() {
   useEffect(() => {
     let cancelled = false
     fetchStops()
-      .then(({ stops: list, defaultStopId }) => {
+      .then(({ stops: list, defaultStopId: fallback }) => {
         if (cancelled) return
         setStops(list)
-        if (!prefs.stopId) update({ stopId: defaultStopId })
+        setDefaultStopId(fallback)
+        if (!prefs.stopId) update({ stopId: fallback })
       })
       .catch(() => {
         /* Offline cold start — the picker just stays empty. */
@@ -83,6 +85,17 @@ export function App() {
   }, [])
 
   const stopId = prefs.stopId || board?.stop.id || ''
+
+  // A saved stop id can outlive the stop itself — 26126 was a wrong guess at
+  // Port Authority and shipped to real phones. Once the server says it doesn't
+  // know the id, drop back to the default rather than polling an empty board
+  // forever. Only an id the server actively disowns is discarded, so a stop
+  // that is merely quiet is left alone.
+  useEffect(() => {
+    if (!board || board.stop.known !== false) return
+    if (!defaultStopId || defaultStopId === stopId) return
+    update({ stopId: defaultStopId, pinnedRoutes: [] })
+  }, [board, defaultStopId, stopId, update])
 
   // Poll while the app is visible and online.
   useEffect(() => {
