@@ -40,7 +40,7 @@ export function NextUp({ departure, now }: Props) {
           <div class={`next__when${imminent ? ' next__when--now' : ''}`}>{when}</div>
 
           <div class="next__route">
-            <span class="next__num">{departure.route}</span>
+            <span class="next__num">{departure.service}</span>
             <span class="next__dest">{departure.destination || 'Destination not posted'}</span>
           </div>
 
