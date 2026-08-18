@@ -44,6 +44,18 @@ fi
 
 # ── Caddy ─────────────────────────────────────────────────────────────────────
 
+# Caddy serves dist/ straight off disk, so a build never needs a reload — only a
+# changed site block does. Comparing the live block against the repo's keeps the
+# everyday deploy sudo-free, which matters because `sudo systemctl reload caddy`
+# fails outright when there's no terminal to type a password into.
+caddy_block() {
+  awk -v host="$HOSTNAME_" '
+    index($0, host " {") == 1 { inblock = 1 }
+    inblock { print }
+    inblock && /^}/ { inblock = 0 }
+  ' "$1" 2>/dev/null | sed -e 's/[[:space:]]*$//' -e '/^[[:space:]]*#/d' -e '/^$/d'
+}
+
 if ! grep -q "$HOSTNAME_" "$CADDYFILE" 2>/dev/null; then
   cat <<EOF
 
@@ -63,10 +75,21 @@ Caddy provisions HTTPS automatically once DNS resolves. After that every
 deploy is just: ./ops/deploy.sh
 ────────────────────────────────────────────────────────────────────────
 EOF
-else
-  echo "▶ Caddy block present; reloading…"
-  sudo systemctl reload caddy
+elif [ "$(caddy_block "$CADDYFILE")" = "$(caddy_block "$ROOT/deploy/njtransit.Caddyfile")" ]; then
+  echo "✓ Caddy config unchanged; no reload needed"
   echo "✓ Live at https://$HOSTNAME_"
+else
+  echo "⚠ The live Caddy site block differs from deploy/njtransit.Caddyfile:"
+  diff <(caddy_block "$CADDYFILE") <(caddy_block "$ROOT/deploy/njtransit.Caddyfile") || true
+  cat <<EOF
+
+Reloading alone won't apply this — $CADDYFILE is root-owned and shared with
+the other sites, so edit the njtransit block there by hand, then:
+
+     sudo systemctl reload caddy
+
+The build and the API are deployed either way; only the site config is stale.
+EOF
 fi
 
 # ── smoke test ────────────────────────────────────────────────────────────────
