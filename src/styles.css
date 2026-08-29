@@ -311,6 +311,19 @@ a {
   font-variant-numeric: tabular-nums;
 }
 
+/* A remembered gate: the same plate, but hollow and dashed. Filled amber is
+   reserved for a gate the terminal has actually posted. */
+.plate--usual {
+  background: transparent;
+  color: var(--amber);
+  border: 1px dashed color-mix(in srgb, var(--amber) 60%, transparent);
+  box-shadow: none;
+}
+
+.plate--usual .plate__label {
+  opacity: 0.85;
+}
+
 .plate--none .plate__value {
   font-size: 22px;
   line-height: 1.5;
@@ -318,6 +331,14 @@ a {
 
 .next__meta {
   min-width: 0;
+}
+
+.next__hedge {
+  margin-top: 8px;
+  max-width: 34ch;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--dimmer);
 }
 
 .next__when {
@@ -529,6 +550,11 @@ a {
   background: var(--amber);
   border-color: var(--amber);
   color: var(--amber-ink);
+}
+
+.gate--usual {
+  border-style: dashed;
+  color: color-mix(in srgb, var(--amber) 82%, var(--dim));
 }
 
 .gate--none {

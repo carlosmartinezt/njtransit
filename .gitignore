@@ -6,3 +6,4 @@ dev-dist/
 *.tsbuildinfo
 .DS_Store
 data/stops.json
+data/gate-history.json
