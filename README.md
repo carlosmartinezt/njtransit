@@ -9,6 +9,11 @@ because it's the fact the terminal itself hides.
 
 - **Sorted by time** by default, **sortable by route**, filterable to the routes
   you actually take (tap a route number; it's remembered).
+- **Remembers gates.** DepartureVision posts a gate only once the terminal
+  assigns one, which is often minutes before boarding. Every gate it does post
+  is written down per trip, and a departure that arrives without one is filled
+  from history and labelled *Usually gate 224* — dashed, never passed off as
+  posted. A slow background poll keeps learning while nobody is looking.
 - **Works offline.** The app shell is precached and the last board is kept, shown
   with an explicit "no connection, this is N minutes old" treatment rather than
   passing stale gates off as live.
@@ -22,6 +27,7 @@ because it's the fact the terminal itself hides.
 ```
 server/       API proxy — the only thing holding NJ TRANSIT credentials
   njt.mjs     BUSDV2 client: auth, token refresh, response normalization
+  gates.mjs   Remembered gates: learn what NJT posts, fill in what it doesn't
   sample.mjs  Sample board used when credentials aren't configured
   stops.mjs   Stop list (GTFS-derived when available, seed otherwise)
   time.mjs    NJ TRANSIT's timestamps → epoch millis in America/New_York

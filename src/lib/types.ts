@@ -5,8 +5,19 @@ export interface Departure {
   /** The exact service, e.g. "166X". Equals `route` unless NJT runs variants. */
   service: string
   destination: string
-  /** Terminal gate, or null for stops that don't have one. */
+  /** Terminal gate, or null when neither NJ Transit nor history has one. */
   gate: string | null
+  /**
+   * Where `gate` came from: "live" is posted on the terminal's board right now,
+   * "usual" is remembered from previous days and must be hedged in the UI.
+   */
+  gateSource?: 'live' | 'usual'
+  /** For a remembered gate: which key matched — this trip, service, or route. */
+  gateBasis?: 'trip' | 'service' | 'route'
+  /** Share of recent sightings that agreed on this gate, 0–1. */
+  gateConfidence?: number
+  gateObservations?: number
+  gateLastSeenAt?: number
   /** Epoch millis for the time the bus actually leaves (predicted when known). */
   departsAt: number | null
   scheduledAt: number | null
@@ -40,6 +51,8 @@ export interface Board {
   notice: string | null
   departures: Departure[]
   routes: string[]
+  /** Gates on this board that came from history rather than NJ Transit. */
+  gatesFilled?: number
   cacheAgeMs?: number
   /** Set when the server fell back to a stale copy after an upstream failure. */
   degraded?: boolean

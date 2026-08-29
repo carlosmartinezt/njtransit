@@ -16,6 +16,13 @@ import { dirname, join } from 'node:path'
 import { NJTransitClient, NJTransitError, normalizeDepartures, PROD_URL, TEST_URL } from './njt.mjs'
 import { sampleBusDV } from './sample.mjs'
 import { allStops, findStop, searchStops, defaultStopId } from './stops.mjs'
+import {
+  applyUsualGates,
+  gateHistoryFor,
+  gateHistoryStats,
+  recordGates,
+  saveGateHistory,
+} from './gates.mjs'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 
@@ -29,6 +36,11 @@ const HOST = process.env.HOST ?? '127.0.0.1'
 // 20s is short enough that a gate change reaches the phone quickly, and long
 // enough that continuous polling costs ~4.3k calls/day against a 40k budget.
 const TTL_MS = Number(process.env.DEPARTURES_TTL_MS ?? 20_000)
+
+// Gates are only learned from boards someone actually loaded, which would mean
+// the history knows the evening rush and nothing else. A slow background poll
+// of the terminal fills in the rest of the day for ~290 calls, against 40k.
+const GATE_SAMPLE_MS = Number(process.env.GATE_SAMPLE_MS ?? 5 * 60_000)
 
 // Hard stop well under NJ Transit's published 40k/day so a runaway client
 // can't get the account throttled.
@@ -166,6 +178,12 @@ async function buildBoard({ stopId, route, direction, ip }) {
     const at = Date.now()
     const { notice, departures } = normalizeDepartures(payload, { at })
 
+    // Learn from what the terminal actually posted, then fill the blanks from
+    // what it has posted before. Order matters: record first, so a remembered
+    // gate can never be re-recorded as if it had been observed.
+    if (source === 'live') recordGates(stopId, departures, at)
+    const gatesFilled = applyUsualGates(stopId, departures, at)
+
     return {
       stop,
       source,
@@ -174,6 +192,8 @@ async function buildBoard({ stopId, route, direction, ip }) {
       departures,
       // Distinct routes on the board, in the order a rider scans them.
       routes: [...new Set(departures.map((d) => d.route))].sort(compareRoutes),
+      /** How many gates on this board came from history rather than NJ Transit. */
+      gatesFilled,
     }
   })
 }
@@ -221,6 +241,7 @@ const server = createServer(async (req, res) => {
         upstreamCallsToday: budget.calls,
         dailyCallCap: DAILY_CALL_CAP,
         cachedBoards: cache.size,
+        gateHistory: gateHistoryStats(),
         defaultStopId: defaultStopId(),
         uptimeSec: Math.round(process.uptime()),
       })
@@ -263,6 +284,16 @@ const server = createServer(async (req, res) => {
       return send(res, 200, { results })
     }
 
+    // What the board has learned about gates at a stop — the backing evidence
+    // for every "usually gate N" it shows.
+    if (path === '/api/gates') {
+      const stopId = (url.searchParams.get('stop') || defaultStopId()).trim()
+      if (!/^[A-Za-z0-9_-]{1,16}$/.test(stopId)) {
+        return send(res, 400, { error: 'Invalid stop id' })
+      }
+      return send(res, 200, { stop: stopId, ...gateHistoryStats(), entries: gateHistoryFor(stopId) })
+    }
+
     if (path === '/api/departures') {
       const stopId = (url.searchParams.get('stop') || defaultStopId()).trim()
       const route = url.searchParams.get('route')?.trim() || undefined
@@ -288,12 +319,35 @@ const server = createServer(async (req, res) => {
   }
 })
 
+/**
+ * Keep learning gates while nobody is looking. It goes through buildBoard so a
+ * rider arriving right after a sample gets it from cache for free.
+ */
+function startGateSampler() {
+  if (!client || GATE_SAMPLE_MS <= 0) return
+  const tick = async () => {
+    try {
+      await buildBoard({ stopId: defaultStopId() })
+    } catch (err) {
+      // A failed sample is not worth waking anyone over; the next one is in
+      // five minutes and riders' own requests keep the history fed meanwhile.
+      console.warn(`gate sample failed: ${err.message}`)
+    }
+  }
+  const timer = setInterval(tick, GATE_SAMPLE_MS)
+  timer.unref()
+  tick()
+  console.log(`▶ sampling gates at stop ${defaultStopId()} every ${Math.round(GATE_SAMPLE_MS / 1000)}s`)
+}
+
 server.listen(PORT, HOST, () => {
   console.log(`▶ njtransit api on http://${HOST}:${PORT}  (default stop ${defaultStopId()})`)
+  startGateSampler()
 })
 
 for (const sig of ['SIGINT', 'SIGTERM']) {
   process.on(sig, () => {
+    saveGateHistory()
     server.close(() => process.exit(0))
   })
 }

@@ -28,8 +28,13 @@ export function BoardRow({ departure: d, now, showRoute = true }: Props) {
         <div class="row__tags">
           {/* Row gates stay outlined even when imminent — the filled plate is
               reserved for the hero, so there is only ever one on screen. */}
+          {/* A remembered gate is drawn dashed and prefixed "usually", because
+              it is a good bet from previous days, not a posted fact. */}
           {d.gate ? (
-            <span class="gate">Gate {d.gate}</span>
+            <span class={`gate${d.gateSource === 'usual' ? ' gate--usual' : ''}`}>
+              {d.gateSource === 'usual' ? 'Usually ' : 'Gate '}
+              {d.gate}
+            </span>
           ) : (
             <span class="gate gate--none">No gate</span>
           )}
