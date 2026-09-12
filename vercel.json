@@ -7,7 +7,6 @@
   "cleanUrls": true,
   "functions": {
     "api/**/*.js": {
-      "runtime": "nodejs22.x",
       "includeFiles": "data/*.json"
     }
   },
@@ -20,7 +19,7 @@
   "rewrites": [
     {
       "source": "/((?!api/).*)",
-      "destination": "/index.html"
+      "destination": "/"
     }
   ],
   "headers": [
@@ -42,7 +41,11 @@
       "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
     },
     {
-      "source": "/(sw.js|registerSW.js|manifest.webmanifest|workbox-(.*).js)",
+      "source": "/:file(sw.js|registerSW.js|manifest.webmanifest)",
+      "headers": [{ "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }]
+    },
+    {
+      "source": "/workbox-:hash.js",
       "headers": [{ "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }]
     }
   ]

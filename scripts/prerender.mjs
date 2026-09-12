@@ -23,25 +23,19 @@ const HERE = dirname(fileURLToPath(import.meta.url))
 const ROOT = join(HERE, '..')
 const DIST = join(ROOT, 'dist')
 
-// Canonicals, og:url and the sitemap must all name the production domain, even
-// in a preview build — a preview that canonicalises itself is a duplicate of the
-// real site with a different hostname. VERCEL_PROJECT_PRODUCTION_URL is the
-// production domain on every deployment, which is exactly that guarantee.
-const ORIGIN =
-  process.env.SITE_ORIGIN ??
-  (process.env.VERCEL_PROJECT_PRODUCTION_URL
-    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-    : 'http://localhost:5183')
+// Canonicals, og:url and the sitemap must all name the site's real home, on
+// every build, including a preview: a preview that canonicalises itself is a
+// duplicate of the real site under a different hostname. So the domain is a
+// constant here rather than an environment variable. SITE_ORIGIN overrides it
+// for a local check.
+const ORIGIN = process.env.SITE_ORIGIN ?? 'https://njtransit.carlosmartinezt.com'
 
-// A deployed build that quietly canonicalises 70 pages to localhost is worse
-// than a failed one: it would take a search engine weeks to forgive. This only
-// happens if the project has system environment variables switched off, in
-// which case set SITE_ORIGIN on the project instead.
-if (process.env.VERCEL && ORIGIN.includes('localhost')) {
-  console.error(
-    '✗ Building on Vercel with no production URL. Set SITE_ORIGIN, or re-enable\n' +
-      '  "Automatically expose System Environment Variables" on the project.',
-  )
+// A deployed build that quietly canonicalises 70 pages to something that isn't
+// the site is worse than a failed one: it would take a search engine weeks to
+// forgive. This has already happened once, when Vercel stored SITE_ORIGIN as a
+// secret and `vercel pull` wrote the literal string "[SENSITIVE]" in its place.
+if (!/^https?:\/\/[a-z0-9.-]+(:\d+)?$/i.test(ORIGIN)) {
+  console.error(`✗ SITE_ORIGIN is not an origin: ${JSON.stringify(ORIGIN)}`)
   process.exit(1)
 }
 

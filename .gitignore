@@ -7,3 +7,8 @@ dev-dist/
 .DS_Store
 data/stops.json
 data/gate-history.json
+.vercel/
+# Vercel writes pulled environments here. Not .env* — that would swallow
+# .env.example, which is meant to be tracked.
+.env.local
+.env*.local
