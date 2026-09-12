@@ -23,7 +23,27 @@ const HERE = dirname(fileURLToPath(import.meta.url))
 const ROOT = join(HERE, '..')
 const DIST = join(ROOT, 'dist')
 
-const ORIGIN = process.env.SITE_ORIGIN ?? 'https://njtransit.carlosmartinezt.com'
+// Canonicals, og:url and the sitemap must all name the production domain, even
+// in a preview build — a preview that canonicalises itself is a duplicate of the
+// real site with a different hostname. VERCEL_PROJECT_PRODUCTION_URL is the
+// production domain on every deployment, which is exactly that guarantee.
+const ORIGIN =
+  process.env.SITE_ORIGIN ??
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : 'http://localhost:5183')
+
+// A deployed build that quietly canonicalises 70 pages to localhost is worse
+// than a failed one: it would take a search engine weeks to forgive. This only
+// happens if the project has system environment variables switched off, in
+// which case set SITE_ORIGIN on the project instead.
+if (process.env.VERCEL && ORIGIN.includes('localhost')) {
+  console.error(
+    '✗ Building on Vercel with no production URL. Set SITE_ORIGIN, or re-enable\n' +
+      '  "Automatically expose System Environment Variables" on the project.',
+  )
+  process.exit(1)
+}
 
 const data = JSON.parse(readFileSync(join(ROOT, 'data', 'routes.json'), 'utf8'))
 const STOP = data.stop

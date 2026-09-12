@@ -30,7 +30,7 @@ export class NJTransitClient {
   #tokenAt = 0
   #authInFlight = null
 
-  constructor({ baseUrl = PROD_URL, username, password, tokenTtlMs = 30 * 60_000 }) {
+  constructor({ baseUrl = PROD_URL, username, password, tokenTtlMs = 30 * 60_000, tokenStore = null }) {
     if (!username || !password) {
       throw new Error('NJTransitClient requires a username and password')
     }
@@ -38,6 +38,9 @@ export class NJTransitClient {
     this.username = username
     this.password = password
     this.tokenTtlMs = tokenTtlMs
+    // Optional shared { get, set } so short-lived instances don't each spend an
+    // authenticateUser call. Absent, the token lives in this object alone.
+    this.tokenStore = tokenStore
   }
 
   get hasToken() {
@@ -53,6 +56,21 @@ export class NJTransitClient {
     if (this.#authInFlight) return this.#authInFlight
 
     this.#authInFlight = (async () => {
+      // A token another instance already paid for is worth a round trip to
+      // fetch: authenticateUser counts against the same daily budget as a board.
+      if (!force && this.tokenStore) {
+        try {
+          const shared = await this.tokenStore.get()
+          if (shared) {
+            this.#token = shared
+            this.#tokenAt = Date.now()
+            return shared
+          }
+        } catch {
+          // Shared token unavailable — authenticate the long way.
+        }
+      }
+
       const body = new URLSearchParams({
         username: this.username,
         password: this.password,
@@ -93,6 +111,13 @@ export class NJTransitClient {
 
       this.#token = json.UserToken
       this.#tokenAt = Date.now()
+      if (this.tokenStore) {
+        try {
+          await this.tokenStore.set(this.#token, this.tokenTtlMs)
+        } catch {
+          // Not shareable this time; the token still works for this instance.
+        }
+      }
       return this.#token
     })()
 

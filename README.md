@@ -25,16 +25,26 @@ because it's the fact the terminal itself hides.
 ## Layout
 
 ```
-server/       API proxy — the only thing holding NJ TRANSIT credentials
+api/          Vercel Functions — the only things holding NJ TRANSIT credentials
+  departures.js  the board
+  stops.js       stop picker list
+  stops/verify.js  checks seeded stop ids against the live API
+  gates.js       what the board has learned about gates
+  health.js      source, store, budget
+  cron/sample.js daily sample + prune
+server/       shared modules the functions are thin wrappers over
+  board.mjs   board assembly, shared cache, upstream call budget
   njt.mjs     BUSDV2 client: auth, token refresh, response normalization
   gates.mjs   Remembered gates: learn what NJT posts, fill in what it doesn't
+  store.mjs   Redis (Upstash), or an in-process fallback for local work
   sample.mjs  Sample board used when credentials aren't configured
   stops.mjs   Stop list (GTFS-derived when available, seed otherwise)
   time.mjs    NJ TRANSIT's timestamps → epoch millis in America/New_York
+  dev.mjs     Local API host — runs the api/ handlers without the Vercel CLI
 src/          Preact SPA
-deploy/       Caddy site block + systemd user unit
-ops/deploy.sh Build + restart + reload
-scripts/      GTFS stop importer, screenshot helper
+ops/deploy.sh vercel build + deploy --prebuilt + a health smoke test
+scripts/      GTFS stop importer, gate-history importer, screenshot helper
+vercel.json   routing, headers, the cron schedule
 ```
 
 ## The NJ TRANSIT API
@@ -64,6 +74,31 @@ sends no CORS headers. The proxy also caches, which is what keeps usage far
 under NJ TRANSIT's published limit of 40,000 calls/day — a 20-second TTL costs
 roughly 4,300 calls/day no matter how many devices are polling.
 
+## State
+
+Nothing on Vercel outlives a request, so the three things the old single process
+kept in itself now live in Redis (Upstash, via the Vercel Marketplace):
+
+| What | Key | Why it can't be per-instance |
+| --- | --- | --- |
+| Gate history | `njt:gates:{stop}:…` | It's the product. A per-instance copy would relearn from nothing on every cold start. |
+| Board cache | `njt:board:{stop\|route\|dir}` | The 20-second TTL is what bounds upstream calls. Per-instance, the call count multiplies by the number of instances. |
+| NJ TRANSIT token | `njt:token` | Otherwise every cold start spends an `authenticateUser` call. |
+| Daily call counter | `njt:calls:{date}` | A cap each instance counts separately isn't a cap. |
+
+The gate history is bucketed by stop, day type and departure hour, so a board
+reads the hour or two it's actually showing (~25 KB) rather than every gate the
+stop has ever posted (~400 KB and growing).
+
+`/api/departures` also carries `s-maxage=20`, so Vercel's CDN answers most
+requests without running a function at all. That's safe because the UI dates
+every board from `generatedAt`, the moment NJ TRANSIT was actually asked — a
+board served from cache says how old it is instead of claiming to be live.
+
+Without Redis configured, all of it falls back to an in-process store: enough to
+run locally on a clean checkout, useless in production. `/api/health` reports
+`persistent: false` when that's what's happening.
+
 ## Setup
 
 ```bash
@@ -71,6 +106,11 @@ npm install
 cp .env.example .env && chmod 600 .env   # add NJT_USERNAME / NJT_PASSWORD
 npm run dev                              # web on :5183, api on :3057
 ```
+
+`npm run dev` runs the `api/` handlers through a small local host
+(`server/dev.mjs`), so no Vercel account is needed to work on the app.
+`npm run dev:vercel` runs `vercel dev` instead, which applies the real routing,
+headers and env from `vercel.json` — worth doing once before a deploy.
 
 Without credentials the app serves a clearly-labelled sample board through the
 identical code path, so everything is exercisable before access is granted.
@@ -96,30 +136,60 @@ Then set `PABT_STOP_ID` in `.env` and restart the API.
 ## Deploy
 
 ```bash
-./ops/deploy.sh
+./ops/deploy.sh            # production
+./ops/deploy.sh preview    # preview URL
 ```
 
-Caddy serves `dist/` directly, so a build is the deploy. The script also
-restarts the API user service and reloads Caddy.
+It builds locally with `vercel build` and ships the output with `--prebuilt`, so
+a broken build fails in seconds instead of halfway through a remote deploy, then
+checks `/api/health` on the result and warns if the deployment is serving the
+sample board or has no Redis.
 
-One-time wiring:
-
-1. **DNS** — there is no `*.carlosmartinezt.com` wildcard; each subdomain has
-   its own Cloudflare record. Add `njtransit` the same way `journal` is set up
-   (proxied, → `5.161.231.48`).
-2. **Caddy** —
-   ```bash
-   sudo sh -c 'cat /home/carlos/njtransit/deploy/njtransit.Caddyfile >> /etc/caddy/Caddyfile'
-   sudo systemctl reload caddy
-   ```
-
-The API runs as a systemd **user** unit (no sudo; lingering keeps it up across
-reboots):
+### One-time wiring
 
 ```bash
-systemctl --user status njtransit-api
-journalctl --user -u njtransit-api -f
+npm i -g vercel
+vercel link                        # create / attach the project
+vercel integration add upstash     # Redis: sets KV_REST_API_URL / KV_REST_API_TOKEN
+
+vercel env add NJT_USERNAME production
+vercel env add NJT_PASSWORD production
+vercel env add PABT_STOP_ID production      # 26229
+vercel env add CRON_SECRET production       # openssl rand -hex 32
 ```
+
+Then bring the months of learned gates across from the old box, so the first
+board on Vercel is as good as the last one on Caddy:
+
+```bash
+vercel env pull .env.local
+set -a && . ./.env.local && set +a
+npm run import:gates                # reads data/gate-history.json
+```
+
+**Domain.** `vercel domains add njtransit.carlosmartinezt.com`, then point the
+Cloudflare record at Vercel instead of `5.161.231.48`. Vercel issues the
+certificate once DNS resolves; the record can stay proxied. The old Caddy site
+block and `njtransit-api.service` should come down only after that resolves, and
+the systemd unit needs removing by hand:
+
+```bash
+systemctl --user disable --now njtransit-api
+rm ~/.config/systemd/user/njtransit-api.service
+# then delete the njtransit block from /etc/caddy/Caddyfile and reload
+```
+
+### The cron caveat
+
+`vercel.json` schedules `/api/cron/sample` once a day, because Vercel's Hobby
+plan allows at most one cron run per day. The old box sampled Port Authority
+every five minutes, which is what taught the gate history the whole service day
+rather than only the hours someone had the app open. One run a day does not
+replace that: learning is now driven almost entirely by real traffic, so
+off-peak trips stay thin until someone loads a board during them.
+
+On a plan that allows it, change the schedule to `*/5 * * * *` and the old
+behaviour is back. Nothing else needs to change.
 
 ## Endpoints
 
@@ -128,7 +198,9 @@ journalctl --user -u njtransit-api -f
 | `GET /api/departures?stop=&route=&direction=` | Normalized board |
 | `GET /api/stops?q=` | Stop list for the picker |
 | `GET /api/stops/verify` | Checks seeded stop ids against the live API |
-| `GET /api/health` | Source (live/sample), upstream calls used today |
+| `GET /api/gates?stop=` | What the board has learned, and the evidence for it |
+| `GET /api/health` | Source (live/sample), store, upstream calls used today |
+| `GET /api/cron/sample` | Daily sample + prune; Vercel calls it, `CRON_SECRET` guards it |
 
 ## Notes
 

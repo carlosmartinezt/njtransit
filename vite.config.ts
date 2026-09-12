@@ -66,8 +66,9 @@ export default defineConfig({
     },
   },
   // `vite preview` is how the prerendered pages get checked before a deploy —
-  // it needs the same API proxy, and it serves dist/bus/166/index.html the way
-  // Caddy does, so /bus/166 can be verified locally.
+  // it needs the same API proxy, and it serves dist/bus/166/index.html for
+  // /bus/166 the way Vercel's static hosting does, so the prerendered pages can
+  // be verified without a deployment.
   preview: {
     port: 5184,
     proxy: {
