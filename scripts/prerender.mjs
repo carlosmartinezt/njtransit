@@ -28,6 +28,10 @@ const DIST = join(ROOT, 'dist')
 // duplicate of the real site under a different hostname. So the domain is a
 // constant here rather than an environment variable. SITE_ORIGIN overrides it
 // for a local check.
+// Change this to https://njtransit-eight.vercel.app once the custom domain has
+// been reduced to a redirect, not before: while Caddy is still serving dist/
+// from this repo, pointing canonicals at a Vercel URL that answers with an SSO
+// redirect is worse than pointing them at the page they're on. See README.
 const ORIGIN = process.env.SITE_ORIGIN ?? 'https://njtransit.carlosmartinezt.com'
 
 // A deployed build that quietly canonicalises 70 pages to something that isn't

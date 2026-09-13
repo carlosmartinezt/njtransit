@@ -167,16 +167,42 @@ set -a && . ./.env.local && set +a
 npm run import:gates                # reads data/gate-history.json
 ```
 
-**Domain.** `vercel domains add njtransit.carlosmartinezt.com`, then point the
-Cloudflare record at Vercel instead of `5.161.231.48`. Vercel issues the
-certificate once DNS resolves; the record can stay proxied. The old Caddy site
-block and `njtransit-api.service` should come down only after that resolves, and
-the systemd unit needs removing by hand:
+**Domain.** `njtransit.carlosmartinezt.com` stays on this box and becomes a
+redirect. `deploy/njtransit-redirect.Caddyfile` is the replacement site block:
 
 ```bash
-systemctl --user disable --now njtransit-api
-rm ~/.config/systemd/user/njtransit-api.service
-# then delete the njtransit block from /etc/caddy/Caddyfile and reload
+# edit /etc/caddy/Caddyfile, swapping the njtransit block for that file
+sudo systemctl reload caddy
+```
+
+Do it in this order, or visitors land on a Vercel login page:
+
+1. **Turn off Deployment Protection** (Settings → Deployment Protection →
+   Vercel Authentication → Disabled). The project was created with protection on
+   for everything except custom domains, so `njtransit-eight.vercel.app` answers
+   with an SSO redirect until this is changed. Confirm with
+   `curl -I https://njtransit-eight.vercel.app/api/health` returning 200, not 302.
+2. **Apply the redirect** above.
+3. **Point the canonicals at the new home.** With the domain reduced to a
+   redirect, the site's real address is the Vercel one, so change the single
+   `ORIGIN` constant at the top of `scripts/prerender.mjs` and redeploy. Until
+   then every page canonicalises to a URL that redirects, which search engines
+   follow but shouldn't have to.
+4. **Retire the API on this box**, once the redirect is confirmed:
+
+   ```bash
+   systemctl --user disable --now njtransit-api
+   rm ~/.config/systemd/user/njtransit-api.service
+   ```
+
+   Not before: until the redirect is live, Caddy is still serving `dist/` from
+   this repo and that copy still needs `/api/*`.
+
+Then check the service worker, which can only be verified once the site is
+publicly reachable (a worker script behind Vercel's SSO redirect is refused):
+
+```bash
+node scripts/verify-live.mjs https://njtransit-eight.vercel.app
 ```
 
 ### The cron caveat

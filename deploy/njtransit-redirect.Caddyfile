@@ -1,0 +1,27 @@
+# njtransit.carlosmartinezt.com, after the move to Vercel.
+#
+# The site is served by Vercel now. This box keeps the hostname only long
+# enough to hand every visitor, and every search engine, over to the new home.
+#
+# Replace the existing njtransit.carlosmartinezt.com block in /etc/caddy/Caddyfile
+# with this one, then:
+#
+#     sudo systemctl reload caddy
+#
+# Order matters. Do this only once https://njtransit-eight.vercel.app answers
+# publicly (Deployment Protection off), or the redirect lands visitors on a
+# Vercel login page.
+
+njtransit.carlosmartinezt.com {
+    # 308, not 302: permanent, and it keeps the method, so a bookmarked
+    # /bus/166 arrives as /bus/166 rather than as the home page.
+    redir https://njtransit-eight.vercel.app{uri} permanent
+}
+
+# Once this is live and confirmed, the API on this box is dead weight:
+#
+#     systemctl --user disable --now njtransit-api
+#     rm ~/.config/systemd/user/njtransit-api.service
+#
+# Leave it running until then. Until the redirect is in place Caddy is still
+# serving dist/ from this repo, and that copy still needs /api/*.
