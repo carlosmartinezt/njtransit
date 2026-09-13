@@ -25,6 +25,25 @@ function credentials() {
   return url && token ? { url, token } : null
 }
 
+/**
+ * Upstash returns HGETALL as a flat [field, value, field, value, …] list, and
+ * only turns it into an object as part of the deserialization this client has
+ * switched off. Switching it off is deliberate: every value here is already a
+ * string this module wrote, and letting the client JSON.parse them would mangle
+ * the board cache. So the pairing up happens here instead.
+ *
+ * This is worth a function rather than a line, because getting it wrong is
+ * invisible: the shape is still an object, it just has "0", "1", "2" for keys,
+ * and a history of six thousand gates reads as empty.
+ */
+function asHash(result) {
+  if (!result) return {}
+  if (!Array.isArray(result)) return result
+  const out = {}
+  for (let i = 0; i < result.length - 1; i += 2) out[String(result[i])] = result[i + 1]
+  return out
+}
+
 function redisStore({ url, token }) {
   const redis = new Redis({ url, token, automaticDeserialization: false })
 
@@ -48,7 +67,9 @@ function redisStore({ url, token }) {
     },
 
     async incr(key, { ttlSec } = {}) {
-      const n = await redis.incr(key)
+      // A string with deserialization off, so compare as a number or the expiry
+      // below never gets set and the day counter outlives its day.
+      const n = Number(await redis.incr(key))
       // Only the first increment needs the expiry; re-setting it every call
       // would push the day counter's reset forward forever.
       if (n === 1 && ttlSec) await redis.expire(key, Math.ceil(ttlSec))
@@ -56,7 +77,7 @@ function redisStore({ url, token }) {
     },
 
     async hgetall(key) {
-      return (await redis.hgetall(key)) ?? {}
+      return asHash(await redis.hgetall(key))
     },
 
     /** Several hashes in one round trip — a board needs four or five. */
@@ -64,7 +85,7 @@ function redisStore({ url, token }) {
       if (!keys.length) return []
       const p = redis.pipeline()
       for (const key of keys) p.hgetall(key)
-      return (await p.exec()).map((r) => r ?? {})
+      return (await p.exec()).map(asHash)
     },
 
     /**

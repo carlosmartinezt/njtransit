@@ -12,3 +12,4 @@ data/gate-history.json
 # .env.example, which is meant to be tracked.
 .env.local
 .env*.local
+.env*
